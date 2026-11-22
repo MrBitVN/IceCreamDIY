@@ -1,0 +1,262 @@
+[
+  {
+    "levelNumber": 1,
+    "hasMinigame": false,
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate"],
+    "targetLayers": [
+      { "flavors": ["Vanilla"], "proportion": 1.0 }
+    ],
+    "sprinklesCount": 0,
+    "hasCherry": false,
+    "extraCones": 1,
+    "customer": { "id": "customer_male_1", "name": "Leo", "gender": "male" }
+  },
+  {
+    "levelNumber": 2,
+    "hasMinigame": true,
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate"],
+    "targetLayers": [
+      { "flavors": ["Vanilla"], "proportion": 0.5 },
+      { "flavors": ["Strawberry"], "proportion": 0.5 }
+    ],
+    "sprinklesCount": 0,
+    "hasCherry": false,
+    "extraCones": 1,
+    "customer": { "id": "customer_female_1", "name": "Mia", "gender": "female" }
+  },
+  {
+    "levelNumber": 3,
+    "hasMinigame": false,
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate"],
+    "targetLayers": [
+      { "flavors": ["Chocolate"], "proportion": 0.35 },
+      { "flavors": ["Vanilla"], "proportion": 0.35 },
+      { "flavors": ["Strawberry"], "proportion": 0.30 }
+    ],
+    "sprinklesCount": 12,
+    "hasCherry": true,
+    "extraCones": 1,
+    "customer": { "id": "customer_male_2", "name": "Max", "gender": "male" }
+  },
+  {
+    "levelNumber": 4,
+    "hasMinigame": true,
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate"],
+    "targetLayers": [
+      { "flavors": ["Strawberry"], "proportion": 0.6 },
+      { "flavors": ["Chocolate"], "proportion": 0.4 }
+    ],
+    "sprinklesCount": 8,
+    "hasCherry": false,
+    "extraCones": 1,
+    "customer": { "id": "customer_female_2", "name": "Chloe", "gender": "female" }
+  },
+  {
+    "levelNumber": 5,
+    "hasMinigame": false,
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate"],
+    "targetLayers": [
+      { "flavors": ["Vanilla", "Strawberry"], "proportion": 1.0 }
+    ],
+    "sprinklesCount": 15,
+    "hasCherry": true,
+    "extraCones": 1,
+    "customer": { "id": "customer_male_1", "name": "Sam", "gender": "male" }
+  },
+  {
+    "levelNumber": 6,
+    "hasMinigame": true,
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate"],
+    "targetLayers": [
+      { "flavors": ["Chocolate"], "proportion": 0.4 },
+      { "flavors": ["Vanilla", "Strawberry"], "proportion": 0.6 }
+    ],
+    "sprinklesCount": 20,
+    "hasCherry": true,
+    "extraCones": 1,
+    "customer": { "id": "customer_female_1", "name": "Zoe", "gender": "female" }
+  },
+  {
+    "levelNumber": 7,
+    "hasMinigame": false,
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate"],
+    "targetLayers": [
+      { "flavors": ["Vanilla"], "proportion": 0.3 },
+      { "flavors": ["Chocolate"], "proportion": 0.4 },
+      { "flavors": ["Vanilla"], "proportion": 0.3 }
+    ],
+    "sprinklesCount": 0,
+    "hasCherry": true,
+    "extraCones": 1,
+    "customer": { "id": "customer_male_2", "name": "Ethan", "gender": "male" }
+  },
+  {
+    "levelNumber": 8,
+    "hasMinigame": true,
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate"],
+    "targetLayers": [
+      { "flavors": ["Strawberry"], "proportion": 0.35 },
+      { "flavors": ["Chocolate", "Vanilla"], "proportion": 0.65 }
+    ],
+    "sprinklesCount": 16,
+    "hasCherry": true,
+    "extraCones": 2,
+    "customer": { "id": "customer_female_2", "name": "Lily", "gender": "female" }
+  },
+  {
+    "levelNumber": 9,
+    "hasMinigame": false,
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate"],
+    "targetLayers": [
+      { "flavors": ["Chocolate"], "proportion": 0.5 },
+      { "flavors": ["Strawberry"], "proportion": 0.5 }
+    ],
+    "sprinklesCount": 24,
+    "hasCherry": true,
+    "extraCones": 2,
+    "customer": { "id": "customer_male_1", "name": "Lucas", "gender": "male" }
+  },
+  {
+    "levelNumber": 10,
+    "hasMinigame": true,
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate"],
+    "targetLayers": [
+      { "flavors": ["Vanilla", "Strawberry", "Chocolate"], "proportion": 1.0 }
+    ],
+    "sprinklesCount": 30,
+    "hasCherry": true,
+    "extraCones": 2,
+    "customer": { "id": "customer_female_1", "name": "Sophia", "gender": "female" }
+  },
+  {
+    "levelNumber": 11,
+    "hasMinigame": false,
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate"],
+    "targetLayers": [
+      { "flavors": ["Vanilla"], "proportion": 0.4 },
+      { "flavors": ["Chocolate", "Strawberry"], "proportion": 0.6 }
+    ],
+    "sprinklesCount": 18,
+    "hasCherry": false,
+    "extraCones": 1,
+    "customer": { "id": "customer_male_2", "name": "Noah", "gender": "male" }
+  },
+  {
+    "levelNumber": 12,
+    "hasMinigame": true,
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate"],
+    "targetLayers": [
+      { "flavors": ["Chocolate"], "proportion": 0.35 },
+      { "flavors": ["Vanilla"], "proportion": 0.35 },
+      { "flavors": ["Chocolate"], "proportion": 0.30 }
+    ],
+    "sprinklesCount": 14,
+    "hasCherry": true,
+    "extraCones": 1,
+    "customer": { "id": "customer_female_2", "name": "Ava", "gender": "female" }
+  },
+  {
+    "levelNumber": 13,
+    "hasMinigame": false,
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate"],
+    "targetLayers": [
+      { "flavors": ["Vanilla", "Chocolate"], "proportion": 0.5 },
+      { "flavors": ["Strawberry"], "proportion": 0.5 }
+    ],
+    "sprinklesCount": 22,
+    "hasCherry": true,
+    "extraCones": 2,
+    "customer": { "id": "customer_male_1", "name": "Oliver", "gender": "male" }
+  },
+  {
+    "levelNumber": 14,
+    "hasMinigame": true,
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate"],
+    "targetLayers": [
+      { "flavors": ["Strawberry"], "proportion": 0.3 },
+      { "flavors": ["Vanilla"], "proportion": 0.4 },
+      { "flavors": ["Strawberry"], "proportion": 0.3 }
+    ],
+    "sprinklesCount": 25,
+    "hasCherry": true,
+    "extraCones": 1,
+    "customer": { "id": "customer_female_1", "name": "Isabella", "gender": "female" }
+  },
+  {
+    "levelNumber": 15,
+    "hasMinigame": false,
+    "availableFlavors": ["Strawberry", "Chocolate", "Pistachio"],
+    "targetLayers": [
+      { "flavors": ["Chocolate", "Pistachio"], "proportion": 1.0 }
+    ],
+    "sprinklesCount": 20,
+    "hasCherry": true,
+    "extraCones": 1,
+    "customer": { "id": "customer_male_2", "name": "Liam", "gender": "male" }
+  },
+  {
+    "levelNumber": 16,
+    "hasMinigame": true,
+    "availableFlavors": ["Strawberry", "Chocolate", "Pistachio"],
+    "targetLayers": [
+      { "flavors": ["Strawberry"], "proportion": 0.4 },
+      { "flavors": ["Pistachio"], "proportion": 0.6 }
+    ],
+    "sprinklesCount": 25,
+    "hasCherry": true,
+    "extraCones": 1,
+    "customer": { "id": "customer_female_2", "name": "Harper", "gender": "female" }
+  },
+  {
+    "levelNumber": 17,
+    "hasMinigame": false,
+    "availableFlavors": ["Strawberry", "Chocolate", "Pistachio"],
+    "targetLayers": [
+      { "flavors": ["Chocolate"], "proportion": 0.35 },
+      { "flavors": ["Strawberry", "Pistachio"], "proportion": 0.65 }
+    ],
+    "sprinklesCount": 28,
+    "hasCherry": true,
+    "extraCones": 2,
+    "customer": { "id": "customer_male_1", "name": "Mason", "gender": "male" }
+  },
+  {
+    "levelNumber": 18,
+    "hasMinigame": true,
+    "availableFlavors": ["Strawberry", "Chocolate", "Pistachio"],
+    "targetLayers": [
+      { "flavors": ["Pistachio"], "proportion": 0.35 },
+      { "flavors": ["Chocolate"], "proportion": 0.35 },
+      { "flavors": ["Strawberry"], "proportion": 0.30 }
+    ],
+    "sprinklesCount": 30,
+    "hasCherry": true,
+    "extraCones": 2,
+    "customer": { "id": "customer_female_1", "name": "Ella", "gender": "female" }
+  },
+  {
+    "levelNumber": 19,
+    "hasMinigame": false,
+    "availableFlavors": ["Strawberry", "Chocolate", "Pistachio"],
+    "targetLayers": [
+      { "flavors": ["Strawberry", "Pistachio"], "proportion": 0.5 },
+      { "flavors": ["Chocolate", "Pistachio"], "proportion": 0.5 }
+    ],
+    "sprinklesCount": 35,
+    "hasCherry": true,
+    "extraCones": 2,
+    "customer": { "id": "customer_male_2", "name": "James", "gender": "male" }
+  },
+  {
+    "levelNumber": 20,
+    "hasMinigame": true,
+    "availableFlavors": ["Strawberry", "Chocolate", "Pistachio"],
+    "targetLayers": [
+      { "flavors": ["Strawberry", "Chocolate", "Pistachio"], "proportion": 1.0 }
+    ],
+    "sprinklesCount": 40,
+    "hasCherry": true,
+    "extraCones": 2,
+    "customer": { "id": "customer_female_2", "name": "Victoria", "gender": "female" }
+  }
+]

@@ -1,0 +1,33 @@
+# Build & Cache Directories
+.gradle/
+build/
+app/build/
+**/build/
+
+# IDE & Editor files
+.idea/
+*.iml
+.vscode/
+*.swp
+*~
+
+# Android specific
+local.properties
+.cxx/
+captures/
+*.apk
+*.aab
+output-metadata.json
+
+# iOS & Xcode specific
+*.xcuserstate
+project.xcworkspace/
+xcuserdata/
+DerivedData/
+*.xcscmblueprint
+*.hmap
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini

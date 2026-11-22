@@ -1,0 +1,400 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1001 /* ice_cream_iosApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2001 /* ice_cream_iosApp.swift */; };
+		1002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2002 /* ContentView.swift */; };
+		1003 /* Flavor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2003 /* Flavor.swift */; };
+		1004 /* LevelConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2004 /* LevelConfig.swift */; };
+		1005 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2005 /* GameState.swift */; };
+		1006 /* GameProgressRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2006 /* GameProgressRepository.swift */; };
+		1007 /* LevelDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2007 /* LevelDataProvider.swift */; };
+		1008 /* GameColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2008 /* GameColors.swift */; };
+		1009 /* TopHudView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2009 /* TopHudView.swift */; };
+		1010 /* CoinPillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2010 /* CoinPillView.swift */; };
+		1011 /* MatchPreviewBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2011 /* MatchPreviewBox.swift */; };
+		1012 /* FlavorButtonsBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2012 /* FlavorButtonsBar.swift */; };
+		1013 /* SplashScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2013 /* SplashScreen.swift */; };
+		1014 /* HomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2014 /* HomeScreen.swift */; };
+		1015 /* GameScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2015 /* GameScreen.swift */; };
+		1016 /* GameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2016 /* GameViewModel.swift */; };
+		1017 /* IceCreamSceneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2017 /* IceCreamSceneView.swift */; };
+		1018 /* ConeGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2018 /* ConeGenerator.swift */; };
+		1019 /* SoftServeGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2019 /* SoftServeGenerator.swift */; };
+		1020 /* DecorationGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2020 /* DecorationGenerator.swift */; };
+		1021 /* CustomerGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2021 /* CustomerGenerator.swift */; };
+		1022 /* SceneLighting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2022 /* SceneLighting.swift */; };
+		1024 /* MeshExtruder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2024 /* MeshExtruder.swift */; };
+		1025 /* SoundHapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2025 /* SoundHapticManager.swift */; };
+		1026 /* IceCreamMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2026 /* IceCreamMatcher.swift */; };
+		1027 /* TutorialHandView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2027 /* TutorialHandView.swift */; };
+		1028 /* levels.json in Resources */ = {isa = PBXBuildFile; fileRef = 2028 /* levels.json */; };
+		1029 /* MinigameBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2029 /* MinigameBoardView.swift */; };
+		1030 /* ResultsOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2030 /* ResultsOverlayView.swift */; };
+		1031 /* SettingsDialogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2031 /* SettingsDialogView.swift */; };
+		1032 /* ShopEnvironmentGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2032 /* ShopEnvironmentGenerator.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0001 /* ice_cream_ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ice_cream_ios.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2001 /* ice_cream_iosApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ice_cream_iosApp.swift; sourceTree = "<group>"; };
+		2002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		2003 /* Flavor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flavor.swift; sourceTree = "<group>"; };
+		2004 /* LevelConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelConfig.swift; sourceTree = "<group>"; };
+		2005 /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
+		2006 /* GameProgressRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameProgressRepository.swift; sourceTree = "<group>"; };
+		2007 /* LevelDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelDataProvider.swift; sourceTree = "<group>"; };
+		2008 /* GameColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameColors.swift; sourceTree = "<group>"; };
+		2009 /* TopHudView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopHudView.swift; sourceTree = "<group>"; };
+		2010 /* CoinPillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPillView.swift; sourceTree = "<group>"; };
+		2011 /* MatchPreviewBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchPreviewBox.swift; sourceTree = "<group>"; };
+		2012 /* FlavorButtonsBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlavorButtonsBar.swift; sourceTree = "<group>"; };
+		2013 /* SplashScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreen.swift; sourceTree = "<group>"; };
+		2014 /* HomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
+		2015 /* GameScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScreen.swift; sourceTree = "<group>"; };
+		2016 /* GameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewModel.swift; sourceTree = "<group>"; };
+		2017 /* IceCreamSceneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IceCreamSceneView.swift; sourceTree = "<group>"; };
+		2018 /* ConeGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConeGenerator.swift; sourceTree = "<group>"; };
+		2019 /* SoftServeGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoftServeGenerator.swift; sourceTree = "<group>"; };
+		2020 /* DecorationGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecorationGenerator.swift; sourceTree = "<group>"; };
+		2021 /* CustomerGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerGenerator.swift; sourceTree = "<group>"; };
+		2022 /* SceneLighting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneLighting.swift; sourceTree = "<group>"; };
+		2023 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2024 /* MeshExtruder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshExtruder.swift; sourceTree = "<group>"; };
+		2025 /* SoundHapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundHapticManager.swift; sourceTree = "<group>"; };
+		2026 /* IceCreamMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IceCreamMatcher.swift; sourceTree = "<group>"; };
+		2027 /* TutorialHandView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialHandView.swift; sourceTree = "<group>"; };
+		2028 /* levels.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = levels.json; sourceTree = "<group>"; };
+		2029 /* MinigameBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinigameBoardView.swift; sourceTree = "<group>"; };
+		2030 /* ResultsOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsOverlayView.swift; sourceTree = "<group>"; };
+		2031 /* SettingsDialogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDialogView.swift; sourceTree = "<group>"; };
+		2032 /* ShopEnvironmentGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopEnvironmentGenerator.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1028 /* levels.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXGroup section */
+		4001 = {
+			isa = PBXGroup;
+			children = (
+				4002 /* ice_cream_ios */,
+				4003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4002 /* ice_cream_ios */ = {
+			isa = PBXGroup;
+			children = (
+				2001 /* ice_cream_iosApp.swift */,
+				2002 /* ContentView.swift */,
+				2023 /* Info.plist */,
+				2028 /* levels.json */,
+				4004 /* Data */,
+				4007 /* Domain */,
+				4005 /* Presentation */,
+				4006 /* Scene3D */,
+			);
+			path = ice_cream_ios;
+			sourceTree = "<group>";
+		};
+		4003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0001 /* ice_cream_ios.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4004 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				2003 /* Flavor.swift */,
+				2004 /* LevelConfig.swift */,
+				2005 /* GameState.swift */,
+				2006 /* GameProgressRepository.swift */,
+				2007 /* LevelDataProvider.swift */,
+			);
+			path = Data;
+			sourceTree = "<group>";
+		};
+		4007 /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				2024 /* MeshExtruder.swift */,
+				2025 /* SoundHapticManager.swift */,
+				2026 /* IceCreamMatcher.swift */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
+		4005 /* Presentation */ = {
+			isa = PBXGroup;
+			children = (
+				2008 /* GameColors.swift */,
+				2009 /* TopHudView.swift */,
+				2010 /* CoinPillView.swift */,
+				2011 /* MatchPreviewBox.swift */,
+				2012 /* FlavorButtonsBar.swift */,
+				2027 /* TutorialHandView.swift */,
+				2029 /* MinigameBoardView.swift */,
+				2030 /* ResultsOverlayView.swift */,
+				2031 /* SettingsDialogView.swift */,
+				2013 /* SplashScreen.swift */,
+				2014 /* HomeScreen.swift */,
+				2015 /* GameScreen.swift */,
+				2016 /* GameViewModel.swift */,
+			);
+			path = Presentation;
+			sourceTree = "<group>";
+		};
+		4006 /* Scene3D */ = {
+			isa = PBXGroup;
+			children = (
+				2017 /* IceCreamSceneView.swift */,
+				2018 /* ConeGenerator.swift */,
+				2019 /* SoftServeGenerator.swift */,
+				2020 /* DecorationGenerator.swift */,
+				2021 /* CustomerGenerator.swift */,
+				2032 /* ShopEnvironmentGenerator.swift */,
+				2022 /* SceneLighting.swift */,
+			);
+			path = Scene3D;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5001 /* ice_cream_ios */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6001 /* Build configuration list for PBXNativeTarget "ice_cream_ios" */;
+			buildPhases = (
+				7001 /* Sources */,
+				3001 /* Frameworks */,
+				3002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ice_cream_ios;
+			productName = ice_cream_ios;
+			productReference = 0001 /* ice_cream_ios.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					5001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 9001 /* Build configuration list for PBXProject "ice_cream_ios" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 4001;
+			productRefGroup = 4003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5001 /* ice_cream_ios */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1001 /* ice_cream_iosApp.swift in Sources */,
+				1002 /* ContentView.swift in Sources */,
+				1003 /* Flavor.swift in Sources */,
+				1004 /* LevelConfig.swift in Sources */,
+				1005 /* GameState.swift in Sources */,
+				1006 /* GameProgressRepository.swift in Sources */,
+				1007 /* LevelDataProvider.swift in Sources */,
+				1008 /* GameColors.swift in Sources */,
+				1009 /* TopHudView.swift in Sources */,
+				1010 /* CoinPillView.swift in Sources */,
+				1011 /* MatchPreviewBox.swift in Sources */,
+				1012 /* FlavorButtonsBar.swift in Sources */,
+				1013 /* SplashScreen.swift in Sources */,
+				1014 /* HomeScreen.swift in Sources */,
+				1015 /* GameScreen.swift in Sources */,
+				1016 /* GameViewModel.swift in Sources */,
+				1017 /* IceCreamSceneView.swift in Sources */,
+				1018 /* ConeGenerator.swift in Sources */,
+				1019 /* SoftServeGenerator.swift in Sources */,
+				1020 /* DecorationGenerator.swift in Sources */,
+				1021 /* CustomerGenerator.swift in Sources */,
+				1022 /* SceneLighting.swift in Sources */,
+				1024 /* MeshExtruder.swift in Sources */,
+				1025 /* SoundHapticManager.swift in Sources */,
+				1026 /* IceCreamMatcher.swift in Sources */,
+				1027 /* TutorialHandView.swift in Sources */,
+				1029 /* MinigameBoardView.swift in Sources */,
+				1030 /* ResultsOverlayView.swift in Sources */,
+				1031 /* SettingsDialogView.swift in Sources */,
+				1032 /* ShopEnvironmentGenerator.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		9002 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		9003 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		6002 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ice_cream_ios/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.icecream.diy.icecream;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		6003 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ice_cream_ios/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.icecream.diy.icecream;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		9001 /* Build configuration list for PBXProject "ice_cream_ios" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9002 /* Debug */,
+				9003 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6001 /* Build configuration list for PBXNativeTarget "ice_cream_ios" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6002 /* Debug */,
+				6003 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 8001 /* Project object */;
+}
