@@ -216,6 +216,8 @@ private class SlicingMinigameRenderer(
     private val pieceOffsetsX = floatArrayOf(-0.11f, 0.11f, 0.0f)
     private val pieceOffsetsZ = floatArrayOf(-0.07f, -0.05f, 0.10f)
     private val pieceRotAngles = floatArrayOf(-22f, 28f, 8f)
+    private val boxWallXs = floatArrayOf(-1.26f, -0.41f, 0.41f, 1.26f)
+    private val mintLeafAngles = floatArrayOf(-38f, 38f, 0f)
 
     // Compartment shake/flash state (indexed by MinigameIngredient.index)
     private val wrongFlashTimers = FloatArray(3)
@@ -428,8 +430,7 @@ private class SlicingMinigameRenderer(
         drawMesh(boxMesh, boxOuterWoodColor)
 
         // Left & Right outer walls + 2 inner dividers
-        val wallXs = floatArrayOf(-boxW * 0.5f, -0.41f, 0.41f, boxW * 0.5f)
-        for (wx in wallXs) {
+        for (wx in boxWallXs) {
             Matrix.setIdentityM(modelMatrix, 0)
             Matrix.translateM(modelMatrix, 0, wx, wallH * 0.5f, boxZ)
             Matrix.scaleM(modelMatrix, 0, wallThick, wallH, boxD)
@@ -496,11 +497,10 @@ private class SlicingMinigameRenderer(
             }
             MinigameIngredient.MINT -> {
                 // 3-leaf fresh 3D Mint sprig
-                val angles = floatArrayOf(-38f, 38f, 0f)
                 for (k in 0 until 3) {
                     Matrix.setIdentityM(modelMatrix, 0)
                     Matrix.translateM(modelMatrix, 0, x, y + k * 0.015f, z)
-                    Matrix.rotateM(modelMatrix, 0, angles[k], 0f, 1f, 0f)
+                    Matrix.rotateM(modelMatrix, 0, mintLeafAngles[k], 0f, 1f, 0f)
                     Matrix.translateM(modelMatrix, 0, 0f, 0f, 0.09f)
                     drawMesh(mintLeafMesh, if (k == 2) mintLeafColor else mintStemColor)
                 }

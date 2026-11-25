@@ -234,6 +234,13 @@ class GameViewModel(
         soundHapticManager?.stopPouringFeedback()
     }
 
+    fun onAppBackgrounded() {
+        stopPouring()
+        if (_uiState.value.activeFlavors.isNotEmpty()) {
+            _uiState.update { it.copy(activeFlavors = emptySet()) }
+        }
+    }
+
     fun evaluateScore(finalProgress: Float = _uiState.value.pourProgress) {
         val result = IceCreamMatcher.evaluate(
             userSegments = recordedSegments,

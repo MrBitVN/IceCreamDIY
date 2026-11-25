@@ -1,5 +1,6 @@
 package com.icecream.diy
 
+import android.content.ComponentCallbacks2
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,6 +9,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.icecream.diy.data.model.AppScreen
 import com.icecream.diy.data.repository.DataStoreProgressRepository
 import com.icecream.diy.domain.engine.SoundHapticManager
@@ -24,9 +27,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val repository = DataStoreProgressRepository(applicationContext)
-        soundHapticManager = SoundHapticManager(applicationContext)
-        viewModel = GameViewModel(applicationContext, repository, soundHapticManager)
+        val appCtx = applicationContext
+        val repository = DataStoreProgressRepository(appCtx)
+        soundHapticManager = SoundHapticManager(appCtx)
+        viewModel = ViewModelProvider(
+            this,
+            object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return GameViewModel(appCtx, repository, soundHapticManager) as T
+                }
+            }
+        )[GameViewModel::class.java]
 
         setContent {
             IceCreamTheme {
@@ -118,8 +130,24 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        if (::viewModel.isInitialized) {
+            viewModel.onAppBackgrounded()
+        }
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        if (level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW && ::viewModel.isInitialized) {
+            viewModel.onAppBackgrounded()
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        soundHapticManager.release()
+        if (isFinishing) {
+            soundHapticManager.release()
+        }
     }
 }

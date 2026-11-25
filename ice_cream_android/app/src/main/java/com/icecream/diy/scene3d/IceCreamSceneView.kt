@@ -12,7 +12,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.icecream.diy.data.model.Flavor
 import com.icecream.diy.data.model.GamePhase
 import com.icecream.diy.domain.engine.MeshExtruder
@@ -42,6 +45,7 @@ fun IceCreamSceneView(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val glView = remember { IceCreamGLSurfaceView(context) }
 
     LaunchedEffect(
@@ -72,8 +76,17 @@ fun IceCreamSceneView(
         )
     }
 
-    DisposableEffect(Unit) {
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> glView.onResume()
+                Lifecycle.Event.ON_PAUSE -> glView.onPause()
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
             glView.onPause()
         }
     }
@@ -90,6 +103,7 @@ class IceCreamGLSurfaceView(context: Context) : GLSurfaceView(context) {
     init {
         setEGLContextClientVersion(3)
         setEGLConfigChooser(8, 8, 8, 8, 16, 0)
+        preserveEGLContextOnPause = true
         holder.setFormat(PixelFormat.TRANSLUCENT)
         setZOrderOnTop(false)
 
@@ -201,6 +215,33 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
     private var coneRotationAngle = 0.0f
     private var lastFrameTime = 0L
 
+    // Preallocated render-loop buffers & color constants (Zero allocation per frame)
+    private val floorColor = floatArrayOf(0.91f, 0.28f, 0.45f, 1.0f)
+    private val wallColor = floatArrayOf(1.0f, 0.82f, 0.85f, 1.0f)
+    private val wallSlatColor = floatArrayOf(0.94f, 0.72f, 0.76f, 1.0f)
+    private val slatYs = floatArrayOf(-0.4f, 0.0f, 0.4f, 0.8f, 1.2f, 1.6f)
+    private val posterFrameColor = floatArrayOf(0.98f, 0.98f, 0.98f, 1.0f)
+    private val posterMatColor = floatArrayOf(0.99f, 0.90f, 0.92f, 1.0f)
+    private val posterConeColor = floatArrayOf(0.92f, 0.71f, 0.44f, 1.0f)
+    private val posterScoopColor = floatArrayOf(1.0f, 0.46f, 0.66f, 1.0f)
+    private val mintMachineColor = floatArrayOf(0.24f, 0.84f, 0.76f, 1.0f)
+    private val leverSilverColor = floatArrayOf(0.88f, 0.90f, 0.92f, 1.0f)
+    private val counterPinkColor = floatArrayOf(1.0f, 0.44f, 0.62f, 1.0f)
+    private val counterTrimColor = floatArrayOf(1.0f, 0.92f, 0.95f, 1.0f)
+    private val sunglassesColor = floatArrayOf(0.12f, 0.12f, 0.14f, 1.0f)
+    private val dollarColor = floatArrayOf(0.34f, 0.74f, 0.44f, 1.0f)
+    private val extraConeColor = floatArrayOf(0.88f, 0.74f, 0.52f, 1.0f)
+    private val mainConeColor = floatArrayOf(0.92f, 0.78f, 0.56f, 1.0f)
+    private val coneRimColor = floatArrayOf(0.90f, 0.77f, 0.54f, 1.0f)
+    private val cherryRedColor = floatArrayOf(0.92f, 0.08f, 0.16f, 1.0f)
+    private val cherryStemColor = floatArrayOf(0.35f, 0.22f, 0.12f, 1.0f)
+    private val silverMetallicColor = floatArrayOf(0.86f, 0.88f, 0.90f, 1.0f)
+    private val canisterWhiteColor = floatArrayOf(0.98f, 0.98f, 0.96f, 1.0f)
+    private val canisterPinkColor = floatArrayOf(1.0f, 0.52f, 0.84f, 1.0f)
+    private val canisterBrownColor = floatArrayOf(0.44f, 0.26f, 0.16f, 1.0f)
+    private val defaultRgb = floatArrayOf(1f, 1f, 1f)
+    private val streamColorBuf = floatArrayOf(1f, 1f, 1f, 1f)
+
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
         GLES30.glEnable(GLES30.GL_DEPTH_TEST)
@@ -289,7 +330,7 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
             Matrix.setIdentityM(modelMatrix, 0)
             Matrix.translateM(modelMatrix, 0, 0.0f, -1.16f, 0.0f)
             Matrix.rotateM(modelMatrix, 0, -90f, 1.0f, 0.0f, 0.0f)
-            drawMesh(floorPlaneMesh, programId, floatArrayOf(0.91f, 0.28f, 0.45f, 1.0f))
+            drawMesh(floorPlaneMesh, programId, floorColor)
         }
 
         // 2. Shop Interior (when level >= 5 and not decorating)
@@ -329,63 +370,62 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
         // Back pink wall
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, 0.0f, 0.6f, -1.8f)
-        drawMesh(wallPlaneMesh, programId, floatArrayOf(1.0f, 0.82f, 0.85f, 1.0f))
+        drawMesh(wallPlaneMesh, programId, wallColor)
 
         // Horizontal wooden slats (tường kẻ gỗ ngang)
-        val slatYs = floatArrayOf(-0.4f, 0.0f, 0.4f, 0.8f, 1.2f, 1.6f)
         for (sy in slatYs) {
             Matrix.setIdentityM(modelMatrix, 0)
             Matrix.translateM(modelMatrix, 0, 0.0f, sy, -1.78f)
             Matrix.scaleM(modelMatrix, 0, 5.0f, 0.03f, 0.02f)
-            drawMesh(boxMesh, programId, floatArrayOf(0.94f, 0.72f, 0.76f, 1.0f))
+            drawMesh(boxMesh, programId, wallSlatColor)
         }
 
         // Framed Poster with Ice Cream artwork inside
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, -0.05f, 1.35f, -1.75f)
         Matrix.scaleM(modelMatrix, 0, 0.75f, 0.95f, 0.05f)
-        drawMesh(boxMesh, programId, floatArrayOf(0.98f, 0.98f, 0.98f, 1.0f))
+        drawMesh(boxMesh, programId, posterFrameColor)
 
         // Inner pink poster mat
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, -0.05f, 1.35f, -1.72f)
         Matrix.scaleM(modelMatrix, 0, 0.62f, 0.80f, 0.02f)
-        drawMesh(boxMesh, programId, floatArrayOf(0.99f, 0.90f, 0.92f, 1.0f))
+        drawMesh(boxMesh, programId, posterMatColor)
 
         // Mini ice cream art inside poster (cone + pink scoop)
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, -0.05f, 1.20f, -1.69f)
         Matrix.scaleM(modelMatrix, 0, 0.14f, 0.22f, 0.03f)
-        drawMesh(boxMesh, programId, floatArrayOf(0.92f, 0.71f, 0.44f, 1.0f))
+        drawMesh(boxMesh, programId, posterConeColor)
 
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, -0.05f, 1.40f, -1.68f)
         Matrix.scaleM(modelMatrix, 0, 0.95f, 0.95f, 0.4f)
-        drawMesh(cherryMesh, programId, floatArrayOf(1.0f, 0.46f, 0.66f, 1.0f))
+        drawMesh(cherryMesh, programId, posterScoopColor)
 
         // Mint / Teal Soft-serve Machine on the left with silver levers
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, -1.25f, 0.35f, -1.3f)
         Matrix.scaleM(modelMatrix, 0, 0.75f, 1.3f, 0.65f)
-        drawMesh(boxMesh, programId, floatArrayOf(0.24f, 0.84f, 0.76f, 1.0f))
+        drawMesh(boxMesh, programId, mintMachineColor)
 
         for (i in -1..1) {
             Matrix.setIdentityM(modelMatrix, 0)
             Matrix.translateM(modelMatrix, 0, -1.25f + i * 0.16f, 0.68f, -0.95f)
             Matrix.scaleM(modelMatrix, 0, 0.05f, 0.22f, 0.06f)
-            drawMesh(boxMesh, programId, floatArrayOf(0.88f, 0.90f, 0.92f, 1.0f))
+            drawMesh(boxMesh, programId, leverSilverColor)
         }
 
         // Front Pink Counter Table with white top trim
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, 0.0f, -1.18f, -0.3f)
         Matrix.scaleM(modelMatrix, 0, 3.8f, 0.85f, 0.9f)
-        drawMesh(boxMesh, programId, floatArrayOf(1.0f, 0.44f, 0.62f, 1.0f))
+        drawMesh(boxMesh, programId, counterPinkColor)
 
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, 0.0f, -0.74f, -0.3f)
         Matrix.scaleM(modelMatrix, 0, 3.85f, 0.07f, 0.94f)
-        drawMesh(boxMesh, programId, floatArrayOf(1.0f, 0.92f, 0.95f, 1.0f))
+        drawMesh(boxMesh, programId, counterTrimColor)
     }
 
     private fun renderCustomer(isThumbsUp: Boolean) {
@@ -459,7 +499,7 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
             Matrix.rotateM(modelMatrix, 0, headPitch, 1f, 0f, 0f)
             Matrix.rotateM(modelMatrix, 0, headYaw, 0f, 1f, 0f)
             Matrix.scaleM(modelMatrix, 0, 0.34f, 0.10f, 0.04f)
-            drawMesh(boxMesh, programId, floatArrayOf(0.12f, 0.12f, 0.14f, 1.0f))
+            drawMesh(boxMesh, programId, sunglassesColor)
         }
 
         // Left Arm (holding cone)
@@ -507,7 +547,6 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
     }
 
     private fun renderDollarParticles() {
-        val dollarColor = floatArrayOf(0.34f, 0.74f, 0.44f, 1.0f)
         for (p in dollarParticles) {
             Matrix.setIdentityM(modelMatrix, 0)
             Matrix.translateM(modelMatrix, 0, p.x, p.y, p.z)
@@ -530,7 +569,7 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
             Matrix.translateM(modelMatrix, 0, coneX, coneY - 0.45f * coneScale, coneZ)
             Matrix.rotateM(modelMatrix, 0, coneRotationAngle, 0.0f, 1.0f, 0.0f)
             Matrix.scaleM(modelMatrix, 0, coneScale, coneScale, coneScale)
-            drawMesh(coneMesh, waffleProgramId, floatArrayOf(0.88f, 0.74f, 0.52f, 1.0f))
+            drawMesh(coneMesh, waffleProgramId, extraConeColor)
         }
 
         // Main Waffle Cone with Procedural Diamond Grid Shader
@@ -538,14 +577,14 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
         Matrix.translateM(modelMatrix, 0, coneX, coneY, coneZ)
         Matrix.rotateM(modelMatrix, 0, coneRotationAngle, 0.0f, 1.0f, 0.0f)
         Matrix.scaleM(modelMatrix, 0, coneScale, coneScale, coneScale)
-        drawMesh(coneMesh, waffleProgramId, floatArrayOf(0.92f, 0.78f, 0.56f, 1.0f))
+        drawMesh(coneMesh, waffleProgramId, mainConeColor)
 
         // Cone Rim
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, coneX, coneY + 0.47f * coneScale, coneZ)
         Matrix.rotateM(modelMatrix, 0, coneRotationAngle, 0.0f, 1.0f, 0.0f)
         Matrix.scaleM(modelMatrix, 0, coneScale, coneScale, coneScale)
-        drawMesh(coneRimMesh, programId, floatArrayOf(0.90f, 0.77f, 0.54f, 1.0f))
+        drawMesh(coneRimMesh, programId, coneRimColor)
 
         // Swirl Mesh
         if (meshExtruder.currentRingCount >= 2) {
@@ -585,13 +624,13 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
                     Matrix.translateM(modelMatrix, 0, coneX, peakY + 0.08f * coneScale, coneZ)
                     Matrix.rotateM(modelMatrix, 0, coneRotationAngle, 0.0f, 1.0f, 0.0f)
                     Matrix.scaleM(modelMatrix, 0, coneScale, coneScale, coneScale)
-                    drawMesh(cherryMesh, programId, floatArrayOf(0.92f, 0.08f, 0.16f, 1.0f))
+                    drawMesh(cherryMesh, programId, cherryRedColor)
 
                     Matrix.setIdentityM(modelMatrix, 0)
                     Matrix.translateM(modelMatrix, 0, coneX, peakY + 0.08f * coneScale, coneZ)
                     Matrix.rotateM(modelMatrix, 0, coneRotationAngle, 0.0f, 1.0f, 0.0f)
                     Matrix.scaleM(modelMatrix, 0, coneScale, coneScale, coneScale)
-                    drawMesh(cherryStemMesh, programId, floatArrayOf(0.35f, 0.22f, 0.12f, 1.0f))
+                    drawMesh(cherryStemMesh, programId, cherryStemColor)
                 }
             }
         }
@@ -606,15 +645,18 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
             val streamHeight = (nozzleTipY - peakY).coerceAtLeast(0.04f)
             val streamCenterY = nozzleTipY - (streamHeight / 2.0f)
 
-            val streamColor = activeFlavors.firstOrNull()?.rgbFloat ?: floatArrayOf(1f, 1f, 1f)
+            val streamColor = activeFlavors.firstOrNull()?.rgbFloat ?: defaultRgb
+            streamColorBuf[0] = streamColor[0]
+            streamColorBuf[1] = streamColor[1]
+            streamColorBuf[2] = streamColor[2]
+            streamColorBuf[3] = 1.0f
             Matrix.setIdentityM(modelMatrix, 0)
             Matrix.translateM(modelMatrix, 0, 0.0f, streamCenterY, 0.0f)
             Matrix.scaleM(modelMatrix, 0, 1.0f, streamHeight, 1.0f)
-            drawMesh(streamMesh, programId, floatArrayOf(streamColor[0], streamColor[1], streamColor[2], 1.0f))
+            drawMesh(streamMesh, programId, streamColorBuf)
         }
 
         // Silver Metallic Dispenser Beam
-        val silverMetallicColor = floatArrayOf(0.86f, 0.88f, 0.90f, 1.0f)
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, 0.0f, 1.35f, 0.0f)
         Matrix.rotateM(modelMatrix, 0, 90f, 0.0f, 0.0f, 1.0f)
@@ -626,9 +668,9 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
         drawMesh(dispenserNozzleMesh, programId, silverMetallicColor)
 
         // 3 Flavor Canisters (Vanilla, Strawberry, Chocolate)
-        drawCanister(-0.42f, floatArrayOf(0.98f, 0.98f, 0.96f, 1.0f)) // White
-        drawCanister(0.0f, floatArrayOf(1.0f, 0.52f, 0.84f, 1.0f))   // Pink
-        drawCanister(0.42f, floatArrayOf(0.44f, 0.26f, 0.16f, 1.0f))  // Brown
+        drawCanister(-0.42f, canisterWhiteColor)
+        drawCanister(0.0f, canisterPinkColor)
+        drawCanister(0.42f, canisterBrownColor)
     }
 
     private fun updateSoftServeExtrusion() {

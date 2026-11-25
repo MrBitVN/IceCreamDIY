@@ -11,7 +11,10 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.icecream.diy.scene3d.camera.SceneLighting
 import com.icecream.diy.scene3d.procedural.ConeGenerator
 import com.icecream.diy.scene3d.procedural.ConeMesh
@@ -26,10 +29,20 @@ fun HomeCustomerSceneView(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val glView = remember { HomeCustomerGLSurfaceView(context) }
 
-    DisposableEffect(Unit) {
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> glView.onResume()
+                Lifecycle.Event.ON_PAUSE -> glView.onPause()
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
             glView.onPause()
         }
     }
@@ -46,6 +59,7 @@ class HomeCustomerGLSurfaceView(context: Context) : GLSurfaceView(context) {
     init {
         setEGLContextClientVersion(2)
         setEGLConfigChooser(8, 8, 8, 8, 16, 0)
+        preserveEGLContextOnPause = true
         holder.setFormat(PixelFormat.TRANSLUCENT)
         setZOrderOnTop(true)
         setRenderer(renderer)
@@ -70,6 +84,7 @@ class HomeCustomerRenderer : GLSurfaceView.Renderer {
     private lateinit var shadowMesh: ConeMesh
 
     private var startTime = System.currentTimeMillis()
+    private val sunglassesColor = floatArrayOf(0.12f, 0.12f, 0.14f, 1.0f)
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
@@ -155,7 +170,7 @@ class HomeCustomerRenderer : GLSurfaceView.Renderer {
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, cx, cy + 0.64f, cz + 0.18f)
         Matrix.scaleM(modelMatrix, 0, 0.34f, 0.10f, 0.04f)
-        drawMesh(boxMesh, floatArrayOf(0.12f, 0.12f, 0.14f, 1.0f), 6)
+        drawMesh(boxMesh, sunglassesColor, 6)
 
         // Left Arm (resting)
         Matrix.setIdentityM(modelMatrix, 0)

@@ -185,6 +185,13 @@ final class GameViewModel: ObservableObject {
         soundHapticManager.stopPouringFeedback()
     }
 
+    func onAppBackgrounded() {
+        stopPouring()
+        if !uiState.activeFlavors.isEmpty {
+            uiState.activeFlavors.removeAll()
+        }
+    }
+
     func evaluateScore(finalProgress: Float) {
         let result = IceCreamMatcher.evaluate(
             userSegments: recordedSegments,
