@@ -2,7 +2,7 @@ package com.icecream.diy.scene3d
 
 import android.content.Context
 import android.graphics.PixelFormat
-import android.opengl.GLES20
+import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import androidx.compose.foundation.layout.fillMaxSize
@@ -84,7 +84,7 @@ class IceCreamGLSurfaceView(context: Context) : GLSurfaceView(context) {
     private val renderer: IceCreamRenderer = IceCreamRenderer()
 
     init {
-        setEGLContextClientVersion(2)
+        setEGLContextClientVersion(3)
         setEGLConfigChooser(8, 8, 8, 8, 16, 0)
         holder.setFormat(PixelFormat.TRANSLUCENT)
         setZOrderOnTop(false)
@@ -130,13 +130,13 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
     @Volatile var customerVariant: Int = 0
     @Volatile var stars: Int = 0
 
-    // Extruder and its preallocated native buffers
+    // Extruder and its preallocated native buffers (Zero Allocation in Render Loop)
     private val meshExtruder = MeshExtruder(ringSegments = 16, maxRings = 180, lobes = 6)
     private var lastExtrudedT = 0.0f
     private lateinit var swirlVertexBuffer: FloatBuffer
     private lateinit var swirlIndexBuffer: ShortBuffer
 
-    // Shader programs
+    // Shader programs (OpenGL ES 3.0)
     private var programId = 0
     private var waffleProgramId = 0
     private var swirlProgramId = 0
@@ -169,6 +169,7 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
     private lateinit var coneMesh: ConeMesh
     private lateinit var coneRimMesh: ConeMesh
     private lateinit var shadowMesh: ConeMesh
+    private lateinit var floorPlaneMesh: ConeMesh
     private lateinit var dispenserBeamMesh: ConeMesh
     private lateinit var dispenserNozzleMesh: ConeMesh
     private lateinit var canisterMesh: ConeMesh
@@ -192,11 +193,11 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
     private var lastFrameTime = 0L
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
-        GLES20.glEnable(GLES20.GL_DEPTH_TEST)
-        GLES20.glDepthFunc(GLES20.GL_LEQUAL)
-        GLES20.glEnable(GLES20.GL_BLEND)
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
+        GLES30.glEnable(GLES30.GL_DEPTH_TEST)
+        GLES30.glDepthFunc(GLES30.GL_LEQUAL)
+        GLES30.glEnable(GLES30.GL_BLEND)
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA)
 
         initShaders()
 
@@ -217,6 +218,7 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
         coneMesh = ConeGenerator.generateWaffleCone(topRadius = 0.44f, bottomRadius = 0.28f, height = 0.95f, radialSegments = 24)
         coneRimMesh = ConeGenerator.generateCylinder(radius = 0.47f, height = 0.08f, segments = 24)
         shadowMesh = SoftServeGenerator.generateShadowPlane(radius = 0.52f, segments = 24)
+        floorPlaneMesh = ShopEnvironmentGenerator.createPlaneMesh(6.0f, 4.0f)
         dispenserBeamMesh = ConeGenerator.generateCylinder(radius = 0.09f, height = 1.25f, segments = 16)
         dispenserNozzleMesh = SoftServeGenerator.generateStarNozzle()
         canisterMesh = ConeGenerator.generateCylinder(radius = 0.09f, height = 0.42f, segments = 16)
@@ -233,8 +235,8 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
-        GLES20.glViewport(0, 0, width, height)
-        val aspect = width.toFloat() / height.toFloat()
+        GLES30.glViewport(0, 0, width, height)
+        val aspect = width.toFloat() / height.toFloat().coerceAtLeast(1f)
         Matrix.perspectiveM(projectionMatrix, 0, 48.0f, aspect, 0.1f, 50.0f)
     }
 
@@ -243,6 +245,7 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
         val dt = ((now - lastFrameTime) / 1000f).coerceIn(0.001f, 0.05f)
         lastFrameTime = now
 
+        // Continuous gentle idle cone rotation
         if (isRotating && gamePhase != GamePhase.CUSTOMER_REACTION) {
             coneRotationAngle += 36.0f * dt
             if (coneRotationAngle >= 360.0f) coneRotationAngle -= 360.0f
@@ -251,9 +254,9 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
         updateSoftServeExtrusion()
         updateDollarParticles(dt)
 
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT or GLES30.GL_DEPTH_BUFFER_BIT)
 
-        // Camera setup
+        // Camera setup (Perspective viewing from slightly above)
         Matrix.setLookAtM(
             viewMatrix, 0,
             0.0f, 0.45f, 3.65f,
@@ -263,26 +266,32 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
 
         val coneY = -0.62f - (pourProgress * 0.70f)
 
-        // 1. Render Shop Interior (when level >= 5)
+        // 1. Darker Pink Floor Plane
+        Matrix.setIdentityM(modelMatrix, 0)
+        Matrix.translateM(modelMatrix, 0, 0.0f, -1.16f, 0.0f)
+        Matrix.rotateM(modelMatrix, 0, -90f, 1.0f, 0.0f, 0.0f)
+        drawMesh(floorPlaneMesh, programId, floatArrayOf(0.91f, 0.28f, 0.45f, 1.0f))
+
+        // 2. Shop Interior (when level >= 5)
         if (level >= 5) {
             renderShopInterior()
         }
 
-        // 2. Render Floor Soft Shadow
+        // 3. Render Floor Soft Shadow under cone
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, 0.0f, -1.15f, 0.0f)
         drawMesh(shadowMesh, programId, SceneLighting.shadowColor)
 
-        // 3. Render Customer in Reaction Phase
+        // 4. Render Customer in Reaction Phase
         if (gamePhase == GamePhase.CUSTOMER_REACTION) {
             renderCustomer(stars == 3)
             renderDollarParticles()
         }
 
-        // 4. Render Cones & Ice Cream
+        // 5. Render Cones & Ice Cream
         renderIceCream(coneY)
 
-        // 5. Render Dispenser Stand & Stream (Only when pouring/preparing)
+        // 6. Render Silver Metallic Dispenser & Canisters
         if (gamePhase != GamePhase.CUSTOMER_REACTION) {
             renderDispenserAndStream()
         }
@@ -316,7 +325,6 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
     private fun renderCustomer(isThumbsUp: Boolean) {
         val variant = CustomerGenerator.VARIANTS[customerVariant % CustomerGenerator.VARIANTS.size]
 
-        // Customer root position (standing behind counter)
         val cx = 0.0f
         val cy = -0.15f
         val cz = -0.55f
@@ -411,7 +419,6 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
                 p.rotX += p.rotSpeedX * dt
                 p.rotY += p.rotSpeedY * dt
 
-                // Land on table counter
                 if (p.y <= -0.72f) {
                     p.y = -0.72f
                     p.isLanded = true
@@ -441,7 +448,7 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
             drawMesh(coneMesh, waffleProgramId, floatArrayOf(0.88f, 0.74f, 0.52f, 1.0f))
         }
 
-        // Main Waffle Cone
+        // Main Waffle Cone with Procedural Diamond Grid Shader
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, 0.0f, coneY, 0.0f)
         Matrix.rotateM(modelMatrix, 0, coneRotationAngle, 0.0f, 1.0f, 0.0f)
@@ -489,7 +496,7 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
     }
 
     private fun renderDispenserAndStream() {
-        // Pouring Stream
+        // Pouring Stream (when active)
         if (activeFlavors.isNotEmpty() && pourProgress < 1.0f) {
             val streamColor = activeFlavors.firstOrNull()?.rgbFloat ?: floatArrayOf(1f, 1f, 1f)
             Matrix.setIdentityM(modelMatrix, 0)
@@ -497,22 +504,22 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
             drawMesh(streamMesh, programId, floatArrayOf(streamColor[0], streamColor[1], streamColor[2], 1.0f))
         }
 
-        // T-shaped Dispenser Beam
-        val woodColor = floatArrayOf(0.82f, 0.66f, 0.46f, 1.0f)
+        // Silver Metallic Dispenser Beam
+        val silverMetallicColor = floatArrayOf(0.86f, 0.88f, 0.90f, 1.0f)
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, 0.0f, 1.35f, 0.0f)
         Matrix.rotateM(modelMatrix, 0, 90f, 0.0f, 0.0f, 1.0f)
-        drawMesh(dispenserBeamMesh, programId, woodColor)
+        drawMesh(dispenserBeamMesh, programId, silverMetallicColor)
 
-        // Star-shaped Nozzle
+        // Star-shaped Nozzle pointing down
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, 0.0f, 1.18f, 0.0f)
-        drawMesh(dispenserNozzleMesh, programId, woodColor)
+        drawMesh(dispenserNozzleMesh, programId, silverMetallicColor)
 
-        // 3 Flavor Canisters
-        drawCanister(-0.42f, floatArrayOf(0.98f, 0.98f, 0.96f, 1.0f))
-        drawCanister(0.0f, floatArrayOf(1.0f, 0.52f, 0.84f, 1.0f))
-        drawCanister(0.42f, floatArrayOf(0.44f, 0.26f, 0.16f, 1.0f))
+        // 3 Flavor Canisters (Vanilla, Strawberry, Chocolate)
+        drawCanister(-0.42f, floatArrayOf(0.98f, 0.98f, 0.96f, 1.0f)) // White
+        drawCanister(0.0f, floatArrayOf(1.0f, 0.52f, 0.84f, 1.0f))   // Pink
+        drawCanister(0.42f, floatArrayOf(0.44f, 0.26f, 0.16f, 1.0f))  // Brown
     }
 
     private fun updateSoftServeExtrusion() {
@@ -549,86 +556,86 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
     }
 
     private fun drawSwirlMesh() {
-        GLES20.glUseProgram(swirlProgramId)
+        GLES30.glUseProgram(swirlProgramId)
         Matrix.multiplyMM(mvpMatrix, 0, viewMatrix, 0, modelMatrix, 0)
         Matrix.multiplyMM(mvpMatrix, 0, projectionMatrix, 0, mvpMatrix, 0)
-        GLES20.glUniformMatrix4fv(sU_MVPMatrixHandle, 1, false, mvpMatrix, 0)
-        GLES20.glUniform3fv(sU_LightPosHandle, 1, SceneLighting.keyLightDirection, 0)
+        GLES30.glUniformMatrix4fv(sU_MVPMatrixHandle, 1, false, mvpMatrix, 0)
+        GLES30.glUniform3fv(sU_LightPosHandle, 1, SceneLighting.keyLightDirection, 0)
 
         val stride = meshExtruder.totalFloatsPerVertex * 4
 
         swirlVertexBuffer.position(0)
-        GLES20.glEnableVertexAttribArray(sA_PositionHandle)
-        GLES20.glVertexAttribPointer(sA_PositionHandle, 3, GLES20.GL_FLOAT, false, stride, swirlVertexBuffer)
+        GLES30.glEnableVertexAttribArray(sA_PositionHandle)
+        GLES30.glVertexAttribPointer(sA_PositionHandle, 3, GLES30.GL_FLOAT, false, stride, swirlVertexBuffer)
 
         swirlVertexBuffer.position(3)
-        GLES20.glEnableVertexAttribArray(sA_NormalHandle)
-        GLES20.glVertexAttribPointer(sA_NormalHandle, 3, GLES20.GL_FLOAT, false, stride, swirlVertexBuffer)
+        GLES30.glEnableVertexAttribArray(sA_NormalHandle)
+        GLES30.glVertexAttribPointer(sA_NormalHandle, 3, GLES30.GL_FLOAT, false, stride, swirlVertexBuffer)
 
         swirlVertexBuffer.position(6)
-        GLES20.glEnableVertexAttribArray(sA_ColorHandle)
-        GLES20.glVertexAttribPointer(sA_ColorHandle, 4, GLES20.GL_FLOAT, false, stride, swirlVertexBuffer)
+        GLES30.glEnableVertexAttribArray(sA_ColorHandle)
+        GLES30.glVertexAttribPointer(sA_ColorHandle, 4, GLES30.GL_FLOAT, false, stride, swirlVertexBuffer)
 
         swirlIndexBuffer.position(0)
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, meshExtruder.getIndicesCount(), GLES20.GL_UNSIGNED_SHORT, swirlIndexBuffer)
+        GLES30.glDrawElements(GLES30.GL_TRIANGLES, meshExtruder.getIndicesCount(), GLES30.GL_UNSIGNED_SHORT, swirlIndexBuffer)
 
-        GLES20.glDisableVertexAttribArray(sA_PositionHandle)
-        GLES20.glDisableVertexAttribArray(sA_NormalHandle)
-        GLES20.glDisableVertexAttribArray(sA_ColorHandle)
+        GLES30.glDisableVertexAttribArray(sA_PositionHandle)
+        GLES30.glDisableVertexAttribArray(sA_NormalHandle)
+        GLES30.glDisableVertexAttribArray(sA_ColorHandle)
     }
 
     private fun drawMesh(mesh: ConeMesh, prg: Int, color: FloatArray) {
-        GLES20.glUseProgram(prg)
+        GLES30.glUseProgram(prg)
         Matrix.multiplyMM(mvpMatrix, 0, viewMatrix, 0, modelMatrix, 0)
         Matrix.multiplyMM(mvpMatrix, 0, projectionMatrix, 0, mvpMatrix, 0)
 
         if (prg == waffleProgramId) {
-            GLES20.glUniformMatrix4fv(wU_MVPMatrixHandle, 1, false, mvpMatrix, 0)
-            GLES20.glUniform4fv(wU_ColorHandle, 1, color, 0)
+            GLES30.glUniformMatrix4fv(wU_MVPMatrixHandle, 1, false, mvpMatrix, 0)
+            GLES30.glUniform4fv(wU_ColorHandle, 1, color, 0)
 
             mesh.vertexBuffer.position(0)
-            GLES20.glEnableVertexAttribArray(wA_PositionHandle)
-            GLES20.glVertexAttribPointer(wA_PositionHandle, 3, GLES20.GL_FLOAT, false, 8 * 4, mesh.vertexBuffer)
+            GLES30.glEnableVertexAttribArray(wA_PositionHandle)
+            GLES30.glVertexAttribPointer(wA_PositionHandle, 3, GLES30.GL_FLOAT, false, 8 * 4, mesh.vertexBuffer)
 
             mesh.vertexBuffer.position(3)
-            GLES20.glEnableVertexAttribArray(wA_NormalHandle)
-            GLES20.glVertexAttribPointer(wA_NormalHandle, 3, GLES20.GL_FLOAT, false, 8 * 4, mesh.vertexBuffer)
+            GLES30.glEnableVertexAttribArray(wA_NormalHandle)
+            GLES30.glVertexAttribPointer(wA_NormalHandle, 3, GLES30.GL_FLOAT, false, 8 * 4, mesh.vertexBuffer)
 
             mesh.indexBuffer.position(0)
-            GLES20.glDrawElements(GLES20.GL_TRIANGLES, mesh.indexCount, GLES20.GL_UNSIGNED_SHORT, mesh.indexBuffer)
+            GLES30.glDrawElements(GLES30.GL_TRIANGLES, mesh.indexCount, GLES30.GL_UNSIGNED_SHORT, mesh.indexBuffer)
 
-            GLES20.glDisableVertexAttribArray(wA_PositionHandle)
-            GLES20.glDisableVertexAttribArray(wA_NormalHandle)
+            GLES30.glDisableVertexAttribArray(wA_PositionHandle)
+            GLES30.glDisableVertexAttribArray(wA_NormalHandle)
         } else {
-            GLES20.glUniformMatrix4fv(uMVPMatrixHandle, 1, false, mvpMatrix, 0)
-            GLES20.glUniform4fv(uColorHandle, 1, color, 0)
-            GLES20.glUniform3fv(uLightPosHandle, 1, SceneLighting.keyLightDirection, 0)
+            GLES30.glUniformMatrix4fv(uMVPMatrixHandle, 1, false, mvpMatrix, 0)
+            GLES30.glUniform4fv(uColorHandle, 1, color, 0)
+            GLES30.glUniform3fv(uLightPosHandle, 1, SceneLighting.keyLightDirection, 0)
 
-            val floatsPerVertex = if (mesh == boxMesh || mesh == dollarBillMesh || mesh == wallPlaneMesh) 6 else 8
+            val floatsPerVertex = if (mesh == boxMesh || mesh == dollarBillMesh || mesh == wallPlaneMesh || mesh == floorPlaneMesh) 6 else 8
 
             mesh.vertexBuffer.position(0)
-            GLES20.glEnableVertexAttribArray(aPositionHandle)
-            GLES20.glVertexAttribPointer(aPositionHandle, 3, GLES20.GL_FLOAT, false, floatsPerVertex * 4, mesh.vertexBuffer)
+            GLES30.glEnableVertexAttribArray(aPositionHandle)
+            GLES30.glVertexAttribPointer(aPositionHandle, 3, GLES30.GL_FLOAT, false, floatsPerVertex * 4, mesh.vertexBuffer)
 
             mesh.vertexBuffer.position(3)
-            GLES20.glEnableVertexAttribArray(aNormalHandle)
-            GLES20.glVertexAttribPointer(aNormalHandle, 3, GLES20.GL_FLOAT, false, floatsPerVertex * 4, mesh.vertexBuffer)
+            GLES30.glEnableVertexAttribArray(aNormalHandle)
+            GLES30.glVertexAttribPointer(aNormalHandle, 3, GLES30.GL_FLOAT, false, floatsPerVertex * 4, mesh.vertexBuffer)
 
             mesh.indexBuffer.position(0)
-            GLES20.glDrawElements(GLES20.GL_TRIANGLES, mesh.indexCount, GLES20.GL_UNSIGNED_SHORT, mesh.indexBuffer)
+            GLES30.glDrawElements(GLES30.GL_TRIANGLES, mesh.indexCount, GLES30.GL_UNSIGNED_SHORT, mesh.indexBuffer)
 
-            GLES20.glDisableVertexAttribArray(aPositionHandle)
-            GLES20.glDisableVertexAttribArray(aNormalHandle)
+            GLES30.glDisableVertexAttribArray(aPositionHandle)
+            GLES30.glDisableVertexAttribArray(aNormalHandle)
         }
     }
 
     private fun initShaders() {
-        val vShaderCode = """
+        val vShaderCode = """#version 300 es
             uniform mat4 uMVPMatrix;
-            attribute vec4 aPosition;
-            attribute vec3 aNormal;
-            varying vec3 vNormal;
-            varying vec3 vPosition;
+            layout(location = 0) in vec4 aPosition;
+            layout(location = 1) in vec3 aNormal;
+            out vec3 vNormal;
+            out vec3 vPosition;
             void main() {
                 gl_Position = uMVPMatrix * aPosition;
                 vNormal = aNormal;
@@ -636,27 +643,28 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
             }
         """.trimIndent()
 
-        val fShaderCode = """
+        val fShaderCode = """#version 300 es
             precision mediump float;
             uniform vec4 uColor;
             uniform vec3 uLightPos;
-            varying vec3 vNormal;
-            varying vec3 vPosition;
+            in vec3 vNormal;
+            in vec3 vPosition;
+            out vec4 fragColor;
             void main() {
                 vec3 norm = normalize(vNormal);
                 vec3 lightDir = normalize(uLightPos - vPosition);
                 float diff = max(dot(norm, lightDir), 0.0);
-                float diffuse = 0.35 + 0.65 * diff;
-                gl_FragColor = vec4(uColor.rgb * diffuse, uColor.a);
+                float diffuse = 0.38 + 0.62 * diff;
+                fragColor = vec4(uColor.rgb * diffuse, uColor.a);
             }
         """.trimIndent()
 
-        val waffleVShader = """
+        val waffleVShader = """#version 300 es
             uniform mat4 uMVPMatrix;
-            attribute vec4 aPosition;
-            attribute vec3 aNormal;
-            varying vec3 vPosition;
-            varying vec3 vNormal;
+            layout(location = 0) in vec4 aPosition;
+            layout(location = 1) in vec3 aNormal;
+            out vec3 vPosition;
+            out vec3 vNormal;
             void main() {
                 gl_Position = uMVPMatrix * aPosition;
                 vPosition = aPosition.xyz;
@@ -664,34 +672,36 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
             }
         """.trimIndent()
 
-        val waffleFShader = """
+        val waffleFShader = """#version 300 es
             precision mediump float;
             uniform vec4 uColor;
-            varying vec3 vPosition;
-            varying vec3 vNormal;
+            in vec3 vPosition;
+            in vec3 vNormal;
+            out vec4 fragColor;
             void main() {
+                // Procedural Diamond Waffle Grid Pattern
                 float u = (vPosition.x + 0.5) * 14.0;
                 float v = (vPosition.y + 1.0) * 14.0;
                 float pattern1 = abs(fract(u + v) - 0.5);
                 float pattern2 = abs(fract(u - v) - 0.5);
                 float grid = smoothstep(0.04, 0.12, min(pattern1, pattern2));
                 vec3 baseColor = uColor.rgb;
-                vec3 grooveColor = baseColor * 0.72;
+                vec3 grooveColor = baseColor * 0.70;
                 vec3 finalColor = mix(grooveColor, baseColor, grid);
                 float diff = max(dot(normalize(vNormal), normalize(vec3(1.5, 2.0, 2.5))), 0.0);
                 float lighting = 0.40 + 0.60 * diff;
-                gl_FragColor = vec4(finalColor * lighting, 1.0);
+                fragColor = vec4(finalColor * lighting, 1.0);
             }
         """.trimIndent()
 
-        val swirlVShader = """
+        val swirlVShader = """#version 300 es
             uniform mat4 uMVPMatrix;
-            attribute vec4 aPosition;
-            attribute vec3 aNormal;
-            attribute vec4 aColor;
-            varying vec3 vNormal;
-            varying vec3 vPosition;
-            varying vec4 vColor;
+            layout(location = 0) in vec4 aPosition;
+            layout(location = 1) in vec3 aNormal;
+            layout(location = 2) in vec4 aColor;
+            out vec3 vNormal;
+            out vec3 vPosition;
+            out vec4 vColor;
             void main() {
                 gl_Position = uMVPMatrix * aPosition;
                 vNormal = aNormal;
@@ -700,56 +710,57 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
             }
         """.trimIndent()
 
-        val swirlFShader = """
+        val swirlFShader = """#version 300 es
             precision mediump float;
             uniform vec3 uLightPos;
-            varying vec3 vNormal;
-            varying vec3 vPosition;
-            varying vec4 vColor;
+            in vec3 vNormal;
+            in vec3 vPosition;
+            in vec4 vColor;
+            out vec4 fragColor;
             void main() {
                 vec3 norm = normalize(vNormal);
                 vec3 lightDir = normalize(uLightPos - vPosition);
                 float diff = max(dot(norm, lightDir), 0.0);
                 float diffuse = 0.45 + 0.55 * diff;
-                gl_FragColor = vec4(vColor.rgb * diffuse, vColor.a);
+                fragColor = vec4(vColor.rgb * diffuse, vColor.a);
             }
         """.trimIndent()
 
         programId = createProgram(vShaderCode, fShaderCode)
-        uMVPMatrixHandle = GLES20.glGetUniformLocation(programId, "uMVPMatrix")
-        uColorHandle = GLES20.glGetUniformLocation(programId, "uColor")
-        uLightPosHandle = GLES20.glGetUniformLocation(programId, "uLightPos")
-        aPositionHandle = GLES20.glGetAttribLocation(programId, "aPosition")
-        aNormalHandle = GLES20.glGetAttribLocation(programId, "aNormal")
+        uMVPMatrixHandle = GLES30.glGetUniformLocation(programId, "uMVPMatrix")
+        uColorHandle = GLES30.glGetUniformLocation(programId, "uColor")
+        uLightPosHandle = GLES30.glGetUniformLocation(programId, "uLightPos")
+        aPositionHandle = 0
+        aNormalHandle = 1
 
         waffleProgramId = createProgram(waffleVShader, waffleFShader)
-        wU_MVPMatrixHandle = GLES20.glGetUniformLocation(waffleProgramId, "uMVPMatrix")
-        wU_ColorHandle = GLES20.glGetUniformLocation(waffleProgramId, "uColor")
-        wA_PositionHandle = GLES20.glGetAttribLocation(waffleProgramId, "aPosition")
-        wA_NormalHandle = GLES20.glGetAttribLocation(waffleProgramId, "aNormal")
+        wU_MVPMatrixHandle = GLES30.glGetUniformLocation(waffleProgramId, "uMVPMatrix")
+        wU_ColorHandle = GLES30.glGetUniformLocation(waffleProgramId, "uColor")
+        wA_PositionHandle = 0
+        wA_NormalHandle = 1
 
         swirlProgramId = createProgram(swirlVShader, swirlFShader)
-        sU_MVPMatrixHandle = GLES20.glGetUniformLocation(swirlProgramId, "uMVPMatrix")
-        sU_LightPosHandle = GLES20.glGetUniformLocation(swirlProgramId, "uLightPos")
-        sA_PositionHandle = GLES20.glGetAttribLocation(swirlProgramId, "aPosition")
-        sA_NormalHandle = GLES20.glGetAttribLocation(swirlProgramId, "aNormal")
-        sA_ColorHandle = GLES20.glGetAttribLocation(swirlProgramId, "aColor")
+        sU_MVPMatrixHandle = GLES30.glGetUniformLocation(swirlProgramId, "uMVPMatrix")
+        sU_LightPosHandle = GLES30.glGetUniformLocation(swirlProgramId, "uLightPos")
+        sA_PositionHandle = 0
+        sA_NormalHandle = 1
+        sA_ColorHandle = 2
     }
 
     private fun loadShader(type: Int, shaderCode: String): Int {
-        val shader = GLES20.glCreateShader(type)
-        GLES20.glShaderSource(shader, shaderCode)
-        GLES20.glCompileShader(shader)
+        val shader = GLES30.glCreateShader(type)
+        GLES30.glShaderSource(shader, shaderCode)
+        GLES30.glCompileShader(shader)
         return shader
     }
 
     private fun createProgram(vCode: String, fCode: String): Int {
-        val vShader = loadShader(GLES20.GL_VERTEX_SHADER, vCode)
-        val fShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fCode)
-        val prg = GLES20.glCreateProgram()
-        GLES20.glAttachShader(prg, vShader)
-        GLES20.glAttachShader(prg, fShader)
-        GLES20.glLinkProgram(prg)
+        val vShader = loadShader(GLES30.GL_VERTEX_SHADER, vCode)
+        val fShader = loadShader(GLES30.GL_FRAGMENT_SHADER, fCode)
+        val prg = GLES30.glCreateProgram()
+        GLES30.glAttachShader(prg, vShader)
+        GLES30.glAttachShader(prg, fShader)
+        GLES30.glLinkProgram(prg)
         return prg
     }
 }

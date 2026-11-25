@@ -39,16 +39,30 @@ final class SceneLighting {
         rimLightNode.look(at: SCNVector3(0, 0, 0))
         scene.rootNode.addChildNode(rimLightNode)
 
-        // Soft Shadow Floor Plane (invisible plane that catches shadows)
-        let floorGeo = SCNPlane(width: 8, height: 8)
+        // Darker Pink Floor Plane matching Android and reference images
+        let floorGeo = SCNPlane(width: 14, height: 14)
         let floorMat = SCNMaterial()
-        floorMat.diffuse.contents = UIColor.clear
+        floorMat.diffuse.contents = UIColor(red: 0.91, green: 0.28, blue: 0.45, alpha: 1.0)
+        floorMat.roughness.contents = 0.8
         floorMat.lightingModel = .physicallyBased
         floorGeo.materials = [floorMat]
 
         let floorNode = SCNNode(geometry: floorGeo)
         floorNode.eulerAngles = SCNVector3(-Float.pi / 2.0, 0, 0)
-        floorNode.position = SCNVector3(0, -1.2, 0)
+        floorNode.position = SCNVector3(0, -1.16, 0)
+        floorNode.name = "floorPlane"
         scene.rootNode.addChildNode(floorNode)
+
+        // Soft Shadow Disk under the waffle cone
+        let shadowGeo = SCNCylinder(radius: 0.45, height: 0.005)
+        let shadowMat = SCNMaterial()
+        shadowMat.diffuse.contents = UIColor(red: 0.65, green: 0.15, blue: 0.30, alpha: 0.45)
+        shadowMat.lightingModel = .constant
+        shadowGeo.materials = [shadowMat]
+
+        let shadowNode = SCNNode(geometry: shadowGeo)
+        shadowNode.position = SCNVector3(0, -1.155, 0)
+        shadowNode.name = "shadowDisk"
+        scene.rootNode.addChildNode(shadowNode)
     }
 }

@@ -7,14 +7,15 @@ final class SoftServeGenerator {
         let dispenserRoot = SCNNode()
         dispenserRoot.name = "dispenserRoot"
 
-        let woodMaterial = SCNMaterial()
-        woodMaterial.diffuse.contents = UIColor(red: 0.82, green: 0.66, blue: 0.46, alpha: 1.0)
-        woodMaterial.roughness.contents = 0.55
-        woodMaterial.lightingModel = .physicallyBased
+        let silverMaterial = SCNMaterial()
+        silverMaterial.diffuse.contents = UIColor(red: 0.86, green: 0.88, blue: 0.90, alpha: 1.0)
+        silverMaterial.metalness.contents = 0.85
+        silverMaterial.roughness.contents = 0.25
+        silverMaterial.lightingModel = .physicallyBased
 
-        // Horizontal wooden beam
+        // Horizontal silver metallic beam
         let beamGeo = SCNCylinder(radius: 0.16, height: 1.45)
-        beamGeo.materials = [woodMaterial]
+        beamGeo.materials = [silverMaterial]
         let beamNode = SCNNode(geometry: beamGeo)
         beamNode.eulerAngles = SCNVector3(0, 0, Float.pi / 2.0)
         beamNode.position = SCNVector3(0, 0, 0)
@@ -22,6 +23,7 @@ final class SoftServeGenerator {
 
         // Center star-fluted nozzle pointing downwards
         let nozzleNode = createStarNozzleNode()
+        nozzleNode.geometry?.firstMaterial = silverMaterial
         nozzleNode.position = SCNVector3(0, -0.22, 0)
         dispenserRoot.addChildNode(nozzleNode)
 

@@ -56,16 +56,16 @@ struct TopHudView: View {
                         starView(isFilled: stars >= 3, angle: 8)
                     }
 
-                    // LEVEL N badge
+                    // LEVEL N badge (turns green when stars > 0)
                     ZStack {
                         Capsule()
-                            .fill(Color.white)
+                            .fill(stars > 0 ? Color(red: 0.46, green: 0.85, blue: 0.16) : Color.white)
                             .frame(width: 110, height: 30)
                             .shadow(color: .black.opacity(0.12), radius: 2, y: 1)
 
                         Text("LEVEL \(level)")
                             .font(.system(size: 14, weight: .black, design: .rounded))
-                            .foregroundColor(GameColors.textDark)
+                            .foregroundColor(stars > 0 ? .white : GameColors.textDark)
                     }
                 }
             }

@@ -77,16 +77,19 @@ fun TopHudView(
                 StarIcon(isFilled = stars >= 3, angle = 8f, offsetY = 0)
             }
 
+            val badgeBgColor = if (stars > 0) Color(0xFF76D828) else Color.White
+            val badgeTextColor = if (stars > 0) Color.White else TextDark
+
             Box(
                 modifier = Modifier
                     .shadow(3.dp, RoundedCornerShape(50))
-                    .background(Color.White, RoundedCornerShape(50))
+                    .background(badgeBgColor, RoundedCornerShape(50))
                     .padding(horizontal = 18.dp, vertical = 4.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "LEVEL $level",
-                    color = TextDark,
+                    color = badgeTextColor,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Black
                 )
