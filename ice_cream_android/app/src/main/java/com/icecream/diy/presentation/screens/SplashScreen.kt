@@ -1,13 +1,10 @@
 package com.icecream.diy.presentation.screens
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -24,11 +21,19 @@ import kotlinx.coroutines.delay
 fun SplashScreen(
     onSplashFinished: () -> Unit
 ) {
-    val scale = remember { Animatable(0.7f) }
+    val infiniteTransition = rememberInfiniteTransition(label = "bounce")
+    val bounceScale by infiniteTransition.animateFloat(
+        initialValue = 0.92f,
+        targetValue = 1.08f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(650, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "scale"
+    )
 
     LaunchedEffect(Unit) {
-        scale.animateTo(1.0f, animationSpec = tween(700))
-        delay(800)
+        delay(2000) // ~2 seconds splash
         onSplashFinished()
     }
 
@@ -44,26 +49,31 @@ fun SplashScreen(
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.scale(scale.value)
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.scale(bounceScale)
         ) {
             Text(
                 text = "🍦",
-                fontSize = 80.sp
+                fontSize = 90.sp
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = "Ice Cream DIY",
                 color = Color.White,
-                fontSize = 36.sp,
+                fontSize = 38.sp,
                 fontWeight = FontWeight.Black
             )
 
+            Spacer(modifier = Modifier.height(6.dp))
+
             Text(
-                text = "Simulator 3D",
-                color = Color.White.copy(alpha = 0.9f),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                text = "3D SIMULATOR",
+                color = Color.White.copy(alpha = 0.92f),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 4.sp
             )
         }
     }

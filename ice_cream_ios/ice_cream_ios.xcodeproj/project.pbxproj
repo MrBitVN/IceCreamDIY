@@ -38,6 +38,7 @@
 		1030 /* ResultsOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2030 /* ResultsOverlayView.swift */; };
 		1031 /* SettingsDialogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2031 /* SettingsDialogView.swift */; };
 		1032 /* ShopEnvironmentGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2032 /* ShopEnvironmentGenerator.swift */; };
+		1033 /* HomeCustomerSceneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2033 /* HomeCustomerSceneView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -74,6 +75,7 @@
 		2030 /* ResultsOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsOverlayView.swift; sourceTree = "<group>"; };
 		2031 /* SettingsDialogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDialogView.swift; sourceTree = "<group>"; };
 		2032 /* ShopEnvironmentGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopEnvironmentGenerator.swift; sourceTree = "<group>"; };
+		2033 /* HomeCustomerSceneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeCustomerSceneView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -181,6 +183,7 @@
 				2021 /* CustomerGenerator.swift */,
 				2032 /* ShopEnvironmentGenerator.swift */,
 				2022 /* SceneLighting.swift */,
+				2033 /* HomeCustomerSceneView.swift */,
 			);
 			path = Scene3D;
 			sourceTree = "<group>";
@@ -273,6 +276,7 @@
 				1030 /* ResultsOverlayView.swift in Sources */,
 				1031 /* SettingsDialogView.swift in Sources */,
 				1032 /* ShopEnvironmentGenerator.swift in Sources */,
+				1033 /* HomeCustomerSceneView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
