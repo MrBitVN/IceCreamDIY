@@ -8,8 +8,10 @@ import kotlin.math.min
 
 data class UserPouredSegment(
     val flavors: Set<Flavor>,
-    val durationSec: Float,
-    val progressFraction: Float
+    val heightStart: Float = 0f,
+    val heightEnd: Float = 0f,
+    val durationSec: Float = 0f,
+    val progressFraction: Float = (heightEnd - heightStart).coerceAtLeast(0f)
 )
 
 data class MatchResult(
@@ -126,22 +128,38 @@ object IceCreamMatcher {
 
         val consolidated = mutableListOf<UserPouredSegment>()
         var currentFlavors = segments[0].flavors
+        var currentStart = segments[0].heightStart
+        var currentEnd = segments[0].heightEnd
         var currentDuration = segments[0].durationSec
-        var currentProgress = segments[0].progressFraction
 
         for (i in 1 until segments.size) {
             val seg = segments[i]
             if (seg.flavors == currentFlavors) {
                 currentDuration += seg.durationSec
-                currentProgress += seg.progressFraction
+                currentEnd = seg.heightEnd
             } else {
-                consolidated.add(UserPouredSegment(currentFlavors, currentDuration, currentProgress))
+                consolidated.add(
+                    UserPouredSegment(
+                        flavors = currentFlavors,
+                        heightStart = currentStart,
+                        heightEnd = currentEnd,
+                        durationSec = currentDuration
+                    )
+                )
                 currentFlavors = seg.flavors
+                currentStart = seg.heightStart
+                currentEnd = seg.heightEnd
                 currentDuration = seg.durationSec
-                currentProgress = seg.progressFraction
             }
         }
-        consolidated.add(UserPouredSegment(currentFlavors, currentDuration, currentProgress))
+        consolidated.add(
+            UserPouredSegment(
+                flavors = currentFlavors,
+                heightStart = currentStart,
+                heightEnd = currentEnd,
+                durationSec = currentDuration
+            )
+        )
         return consolidated
     }
 }

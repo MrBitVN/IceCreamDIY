@@ -164,12 +164,13 @@ class GameViewModel(
                 val addedFraction = pourSpeed * dt
                 val newProgress = (currentProgress + addedFraction).coerceAtMost(maxPourProgress)
 
-                // Record segment for scoring evaluation
+                // Record segment for scoring evaluation (flavorSet, heightStart, heightEnd)
                 recordedSegments.add(
                     UserPouredSegment(
                         flavors = _uiState.value.activeFlavors,
-                        durationSec = dt,
-                        progressFraction = addedFraction
+                        heightStart = currentProgress,
+                        heightEnd = newProgress,
+                        durationSec = dt
                     )
                 )
 

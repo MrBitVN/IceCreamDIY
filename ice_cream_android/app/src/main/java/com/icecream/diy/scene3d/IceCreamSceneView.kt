@@ -222,7 +222,7 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
         dispenserBeamMesh = ConeGenerator.generateCylinder(radius = 0.09f, height = 1.25f, segments = 16)
         dispenserNozzleMesh = SoftServeGenerator.generateStarNozzle()
         canisterMesh = ConeGenerator.generateCylinder(radius = 0.09f, height = 0.42f, segments = 16)
-        streamMesh = SoftServeGenerator.generateStreamMesh(startY = 0.8f, endY = -0.1f, radius = 0.06f)
+        streamMesh = SoftServeGenerator.generateStreamMesh(startY = 0.5f, endY = -0.5f, radius = 0.06f)
         sprinkleMesh = ConeGenerator.generateCylinder(radius = 0.02f, height = 0.08f, segments = 8)
         cherryMesh = DecorationGenerator.generateCherry(radius = 0.12f)
 
@@ -496,11 +496,18 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
     }
 
     private fun renderDispenserAndStream() {
-        // Pouring Stream (when active)
+        // Dynamic Pouring Stream connecting nozzle tip (Y=1.02) to current ice cream peak (peakY)
         if (activeFlavors.isNotEmpty() && pourProgress < 1.0f) {
+            val coneY = -0.62f - (pourProgress * 0.70f)
+            val peakY = coneY + 0.48f + (pourProgress * 1.55f)
+            val nozzleTipY = 1.02f
+            val streamHeight = (nozzleTipY - peakY).coerceAtLeast(0.04f)
+            val streamCenterY = nozzleTipY - (streamHeight / 2.0f)
+
             val streamColor = activeFlavors.firstOrNull()?.rgbFloat ?: floatArrayOf(1f, 1f, 1f)
             Matrix.setIdentityM(modelMatrix, 0)
-            Matrix.translateM(modelMatrix, 0, 0.0f, 0.72f, 0.0f)
+            Matrix.translateM(modelMatrix, 0, 0.0f, streamCenterY, 0.0f)
+            Matrix.scaleM(modelMatrix, 0, 1.0f, streamHeight, 1.0f)
             drawMesh(streamMesh, programId, floatArrayOf(streamColor[0], streamColor[1], streamColor[2], 1.0f))
         }
 
@@ -534,6 +541,7 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
         }
 
         val stepT = 0.008f
+        val previousRingCount = meshExtruder.currentRingCount
         var ringsAdded = false
         while (lastExtrudedT + stepT <= pourProgress && meshExtruder.currentRingCount < meshExtruder.maxRings) {
             lastExtrudedT += stepT
@@ -542,9 +550,11 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
         }
 
         if (ringsAdded) {
-            val totalFloats = meshExtruder.currentRingCount * meshExtruder.ringSegments * meshExtruder.totalFloatsPerVertex
-            swirlVertexBuffer.position(0)
-            swirlVertexBuffer.put(meshExtruder.vertexBufferData, 0, totalFloats)
+            val floatsPerRing = meshExtruder.ringSegments * meshExtruder.totalFloatsPerVertex
+            val startFloat = previousRingCount * floatsPerRing
+            val newFloats = (meshExtruder.currentRingCount - previousRingCount) * floatsPerRing
+            swirlVertexBuffer.position(startFloat)
+            swirlVertexBuffer.put(meshExtruder.vertexBufferData, startFloat, newFloats)
             swirlVertexBuffer.position(0)
         }
     }

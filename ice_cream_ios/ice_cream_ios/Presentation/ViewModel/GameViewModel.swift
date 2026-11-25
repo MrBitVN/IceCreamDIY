@@ -132,8 +132,9 @@ final class GameViewModel: ObservableObject {
             self.recordedSegments.append(
                 UserPouredSegment(
                     flavors: self.uiState.activeFlavors,
-                    durationSec: dt,
-                    progressFraction: addedFraction
+                    heightStart: currentProgress,
+                    heightEnd: newProgress,
+                    durationSec: dt
                 )
             )
 

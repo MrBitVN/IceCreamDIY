@@ -232,11 +232,20 @@ struct IceCreamSceneView: UIViewRepresentable {
                 swirl.geometry = meshExtruder.buildGeometry()
             }
 
-            // Pouring Stream
+            // Dynamic Pouring Stream connecting nozzle tip (Y = 1.05) to current ice cream peak
             if !activeFlavors.isEmpty && pourProgress < 1.0 && gamePhase != .customerReaction {
                 stream.isHidden = false
                 let primaryColor = activeFlavors.first?.uiColor ?? UIColor.white
                 stream.geometry?.firstMaterial?.diffuse.contents = primaryColor
+
+                let nozzleTipY: Float = 1.05
+                let peakY = currentConeY + 0.48 + (pourProgress * 1.55)
+                let streamHeight = max(nozzleTipY - peakY, 0.04)
+                let streamCenterY = nozzleTipY - (streamHeight / 2.0)
+
+                stream.position = SCNVector3(0, streamCenterY, 0)
+                let baseHeight: Float = 0.65
+                stream.scale = SCNVector3(1.0, streamHeight / baseHeight, 1.0)
             } else {
                 stream.isHidden = true
             }

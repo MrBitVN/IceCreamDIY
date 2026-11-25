@@ -1,9 +1,18 @@
 import Foundation
 
-struct UserPouredSegment {
+struct UserPouredSegment: Equatable {
     let flavors: Set<Flavor>
+    let heightStart: Float
+    let heightEnd: Float
     let durationSec: Float
-    let progressFraction: Float
+    var progressFraction: Float { max(0, heightEnd - heightStart) }
+
+    init(flavors: Set<Flavor>, heightStart: Float, heightEnd: Float, durationSec: Float = 0) {
+        self.flavors = flavors
+        self.heightStart = heightStart
+        self.heightEnd = heightEnd
+        self.durationSec = durationSec
+    }
 }
 
 struct MatchResult {
@@ -119,22 +128,38 @@ enum IceCreamMatcher {
 
         var consolidated: [UserPouredSegment] = []
         var currentFlavors = segments[0].flavors
+        var currentStart = segments[0].heightStart
+        var currentEnd = segments[0].heightEnd
         var currentDuration = segments[0].durationSec
-        var currentProgress = segments[0].progressFraction
 
         for i in 1..<segments.count {
             let seg = segments[i]
             if seg.flavors == currentFlavors {
                 currentDuration += seg.durationSec
-                currentProgress += seg.progressFraction
+                currentEnd = seg.heightEnd
             } else {
-                consolidated.append(UserPouredSegment(flavors: currentFlavors, durationSec: currentDuration, progressFraction: currentProgress))
+                consolidated.append(
+                    UserPouredSegment(
+                        flavors = currentFlavors,
+                        heightStart = currentStart,
+                        heightEnd = currentEnd,
+                        durationSec = currentDuration
+                    )
+                )
                 currentFlavors = seg.flavors
+                currentStart = seg.heightStart
+                currentEnd = seg.heightEnd
                 currentDuration = seg.durationSec
-                currentProgress = seg.progressFraction
             }
         }
-        consolidated.append(UserPouredSegment(flavors: currentFlavors, durationSec: currentDuration, progressFraction: currentProgress))
+        consolidated.append(
+            UserPouredSegment(
+                flavors = currentFlavors,
+                heightStart = currentStart,
+                heightEnd = currentEnd,
+                durationSec = currentDuration
+            )
+        )
         return consolidated
     }
 }
