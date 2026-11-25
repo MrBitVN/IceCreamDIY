@@ -65,6 +65,16 @@ object IceCreamMatcher {
         // Aggregate consecutive segments with identical flavor sets into distinct layers
         val userLayers = consolidateUserLayers(userSegments)
 
+        if (userLayers.isEmpty()) {
+            return MatchResult(
+                totalScore = 0,
+                stars = 0,
+                sequenceScore = 0f,
+                proportionScore = 0f,
+                heightScore = 0f
+            )
+        }
+
         // 1. Calculate S_seq (Sequence & Flavor Accuracy)
         val numUser = userLayers.size
         val numTarget = targetLayers.size
@@ -98,7 +108,13 @@ object IceCreamMatcher {
             val targetProp = targetLayers[i].proportion
             propDiff += abs(userNormalizedProp - targetProp)
         }
-        val proportionScore = (100f * max(0f, 1f - propDiff)).coerceIn(0f, 100f)
+        for (i in compareCount until numTarget) {
+            propDiff += targetLayers[i].proportion
+        }
+        for (i in compareCount until numUser) {
+            propDiff += userLayers[i].progressFraction / totalUserProgress
+        }
+        val proportionScore = (100f * max(0f, 1f - (propDiff / 2.0f))).coerceIn(0f, 100f)
 
         // 3. Calculate S_height (Height / Fill Completeness)
         val heightDiff = abs(finalPourProgress - 1.0f)

@@ -60,10 +60,20 @@ enum IceCreamMatcher {
         finalPourProgress: Float
     ) -> MatchResult {
         if targetLayers.isEmpty {
-            return MatchResult(totalScore = 100, stars: 3, sequenceScore: 100, proportionScore: 100, heightScore: 100)
+            return MatchResult(totalScore: 100, stars: 3, sequenceScore: 100, proportionScore: 100, heightScore: 100)
         }
 
         let userLayers = consolidateUserLayers(userSegments)
+
+        if userLayers.isEmpty {
+            return MatchResult(
+                totalScore: 0,
+                stars: 0,
+                sequenceScore: 0,
+                proportionScore: 0,
+                heightScore: 0
+            )
+        }
 
         // 1. Calculate S_seq (Sequence & Flavor Accuracy)
         let numUser = userLayers.count
@@ -97,7 +107,13 @@ enum IceCreamMatcher {
             let targetProp = targetLayers[i].proportion
             propDiff += abs(userNormalizedProp - targetProp)
         }
-        let proportionScore = min(max(100.0 * max(0.0, 1.0 - propDiff), 0.0), 100.0)
+        for i in compareCount..<numTarget {
+            propDiff += targetLayers[i].proportion
+        }
+        for i in compareCount..<numUser {
+            propDiff += userLayers[i].progressFraction / totalUserProgress
+        }
+        let proportionScore = min(max(100.0 * max(0.0, 1.0 - (propDiff / 2.0)), 0.0), 100.0)
 
         // 3. Calculate S_height (Height / Fill Completeness)
         let heightDiff = abs(finalPourProgress - 1.0)

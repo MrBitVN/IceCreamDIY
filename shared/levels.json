@@ -2,7 +2,7 @@
   {
     "levelNumber": 1,
     "hasMinigame": false,
-    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate"],
+    "availableFlavors": ["Vanilla"],
     "targetLayers": [
       { "flavors": ["Vanilla"], "proportion": 1.0 }
     ],
@@ -185,7 +185,7 @@
   {
     "levelNumber": 15,
     "hasMinigame": false,
-    "availableFlavors": ["Strawberry", "Chocolate", "Pistachio"],
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate", "Pistachio"],
     "targetLayers": [
       { "flavors": ["Chocolate", "Pistachio"], "proportion": 1.0 }
     ],
@@ -197,7 +197,7 @@
   {
     "levelNumber": 16,
     "hasMinigame": true,
-    "availableFlavors": ["Strawberry", "Chocolate", "Pistachio"],
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate", "Pistachio"],
     "targetLayers": [
       { "flavors": ["Strawberry"], "proportion": 0.4 },
       { "flavors": ["Pistachio"], "proportion": 0.6 }
@@ -210,7 +210,7 @@
   {
     "levelNumber": 17,
     "hasMinigame": false,
-    "availableFlavors": ["Strawberry", "Chocolate", "Pistachio"],
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate", "Pistachio"],
     "targetLayers": [
       { "flavors": ["Chocolate"], "proportion": 0.35 },
       { "flavors": ["Strawberry", "Pistachio"], "proportion": 0.65 }
@@ -223,7 +223,7 @@
   {
     "levelNumber": 18,
     "hasMinigame": true,
-    "availableFlavors": ["Strawberry", "Chocolate", "Pistachio"],
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate", "Pistachio"],
     "targetLayers": [
       { "flavors": ["Pistachio"], "proportion": 0.35 },
       { "flavors": ["Chocolate"], "proportion": 0.35 },
@@ -237,7 +237,7 @@
   {
     "levelNumber": 19,
     "hasMinigame": false,
-    "availableFlavors": ["Strawberry", "Chocolate", "Pistachio"],
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate", "Pistachio"],
     "targetLayers": [
       { "flavors": ["Strawberry", "Pistachio"], "proportion": 0.5 },
       { "flavors": ["Chocolate", "Pistachio"], "proportion": 0.5 }
@@ -250,7 +250,7 @@
   {
     "levelNumber": 20,
     "hasMinigame": true,
-    "availableFlavors": ["Strawberry", "Chocolate", "Pistachio"],
+    "availableFlavors": ["Vanilla", "Strawberry", "Chocolate", "Pistachio"],
     "targetLayers": [
       { "flavors": ["Strawberry", "Chocolate", "Pistachio"], "proportion": 1.0 }
     ],

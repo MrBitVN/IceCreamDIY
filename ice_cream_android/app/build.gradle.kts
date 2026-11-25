@@ -62,4 +62,7 @@ dependencies {
 
     // Filament / SceneView
     implementation("io.github.sceneview:sceneview:2.2.1")
+
+    // Unit Testing
+    testImplementation("junit:junit:4.13.2")
 }
