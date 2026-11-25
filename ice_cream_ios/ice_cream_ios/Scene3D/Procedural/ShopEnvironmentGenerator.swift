@@ -36,6 +36,20 @@ final class ShopEnvironmentGenerator {
         posterInside.position = SCNVector3(-0.05, 1.45, -1.73)
         root.addChildNode(posterInside)
 
+        // Ice cream artwork inside the framed poster
+        let artConeGeo = SCNCone(topRadius: 0.01, bottomRadius: 0.11, height: 0.24)
+        artConeGeo.firstMaterial?.diffuse.contents = UIColor(red: 0.92, green: 0.71, blue: 0.44, alpha: 1.0)
+        let artCone = SCNNode(geometry: artConeGeo)
+        artCone.position = SCNVector3(-0.05, 1.32, -1.71)
+        artCone.eulerAngles = SCNVector3(0, 0, Float.pi)
+        root.addChildNode(artCone)
+
+        let artScoopGeo = SCNSphere(radius: 0.12)
+        artScoopGeo.firstMaterial?.diffuse.contents = UIColor(red: 1.0, green: 0.46, blue: 0.66, alpha: 1.0)
+        let artScoop = SCNNode(geometry: artScoopGeo)
+        artScoop.position = SCNVector3(-0.05, 1.50, -1.71)
+        root.addChildNode(artScoop)
+
         // 3. Teal Soft-serve Machine on the left side (Image 5, 6)
         let machineBodyGeo = SCNBox(width: 0.72, height: 1.25, length: 0.6, chamferRadius: 0.04)
         machineBodyGeo.firstMaterial?.diffuse.contents = UIColor(red: 0.18, green: 0.75, blue: 0.78, alpha: 1.0)

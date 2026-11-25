@@ -94,32 +94,37 @@ final class CustomerGenerator {
         neckNode.position = SCNVector3(0, 0.38, 0)
         root.addChildNode(neckNode)
 
+        // Head Group (for happy nodding / sad droop animation)
+        let headGroup = SCNNode()
+        headGroup.position = SCNVector3(0, 0.62, 0)
+        root.addChildNode(headGroup)
+
         // Head
         let headGeo = SCNBox(width: 0.36, height: 0.40, length: 0.32, chamferRadius: 0.05)
         headGeo.firstMaterial?.diffuse.contents = variant.skinColor
         let headNode = SCNNode(geometry: headGeo)
-        headNode.position = SCNVector3(0, 0.62, 0)
-        root.addChildNode(headNode)
+        headNode.position = SCNVector3(0, 0, 0)
+        headGroup.addChildNode(headNode)
 
         // Hair
         let hairTopGeo = SCNBox(width: 0.39, height: 0.14, length: 0.35, chamferRadius: 0.03)
         hairTopGeo.firstMaterial?.diffuse.contents = variant.hairColor
         let hairTopNode = SCNNode(geometry: hairTopGeo)
-        hairTopNode.position = SCNVector3(0, 0.78, 0)
-        root.addChildNode(hairTopNode)
+        hairTopNode.position = SCNVector3(0, 0.16, 0)
+        headGroup.addChildNode(hairTopNode)
 
         if variant.hasLongHair {
             // Left long hair strand
             let hairLeftGeo = SCNBox(width: 0.08, height: 0.48, length: 0.24, chamferRadius: 0.02)
             hairLeftGeo.firstMaterial?.diffuse.contents = variant.hairColor
             let hairLeft = SCNNode(geometry: hairLeftGeo)
-            hairLeft.position = SCNVector3(-0.21, 0.52, 0.02)
-            root.addChildNode(hairLeft)
+            hairLeft.position = SCNVector3(-0.21, -0.10, 0.02)
+            headGroup.addChildNode(hairLeft)
 
             // Right long hair strand
             let hairRight = hairLeft.clone()
-            hairRight.position = SCNVector3(0.21, 0.52, 0.02)
-            root.addChildNode(hairRight)
+            hairRight.position = SCNVector3(0.21, -0.10, 0.02)
+            headGroup.addChildNode(hairRight)
         }
 
         // Sunglasses (if applicable)
@@ -127,8 +132,22 @@ final class CustomerGenerator {
             let frameGeo = SCNBox(width: 0.34, height: 0.10, length: 0.04, chamferRadius: 0.01)
             frameGeo.firstMaterial?.diffuse.contents = UIColor(white: 0.12, alpha: 1.0)
             let frameNode = SCNNode(geometry: frameGeo)
-            frameNode.position = SCNVector3(0, 0.64, 0.18)
-            root.addChildNode(frameNode)
+            frameNode.position = SCNVector3(0, 0.02, 0.18)
+            headGroup.addChildNode(frameNode)
+        }
+
+        if isThumbsUp {
+            // Happy nodding for 3 stars
+            let nodDown = SCNAction.rotateBy(x: 0.18, y: 0, z: 0, duration: 0.24)
+            let nodUp = SCNAction.rotateBy(x: -0.18, y: 0, z: 0, duration: 0.24)
+            headGroup.runAction(SCNAction.repeatForever(SCNAction.sequence([nodDown, nodUp])))
+        } else {
+            // Sad head droop for low stars
+            headGroup.eulerAngles = SCNVector3(0.28, 0, 0)
+            let shakeL = SCNAction.rotateBy(x: 0, y: 0.10, z: 0, duration: 0.45)
+            let shakeR = SCNAction.rotateBy(x: 0, y: -0.20, z: 0, duration: 0.90)
+            let shakeBack = SCNAction.rotateBy(x: 0, y: 0.10, z: 0, duration: 0.45)
+            headGroup.runAction(SCNAction.repeatForever(SCNAction.sequence([shakeL, shakeR, shakeBack])))
         }
 
         // Left Arm (holding cone in hand)

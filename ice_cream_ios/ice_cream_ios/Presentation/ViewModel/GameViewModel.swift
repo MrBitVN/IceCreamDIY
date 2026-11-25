@@ -19,6 +19,11 @@ struct GameUiState {
     var isHapticsEnabled: Bool = true
     var showSettingsDialog: Bool = false
     var showResultsOverlay: Bool = false
+    var isDecorated: Bool = false
+    var decorationBonusCoins: Int = 15
+    var showMysteryCone: Bool = false
+    var isRewardDoubled: Bool = false
+    var userPouredSegments: [UserPouredSegment] = []
     var matchResult: MatchResult? = nil
 }
 
@@ -68,16 +73,20 @@ final class GameViewModel: ObservableObject {
         let currentLvl = uiState.level
         let config = LevelDataProvider.getLevel(currentLvl)
         uiState.screen = .game
-        uiState.phase = config.hasMinigame ? .prepareMinigame : .pouring
+        uiState.phase = config.initialPhase()
         uiState.targetConfig = config
         uiState.activeFlavors.removeAll()
         uiState.pourProgress = 0.0
         uiState.stars = 0
         uiState.matchScore = 0
         uiState.matchResult = nil
+        uiState.userPouredSegments = []
         uiState.showTutorial = (currentLvl == 1)
         uiState.customerVariant = (currentLvl - 1) % 5
         uiState.showResultsOverlay = false
+        uiState.isDecorated = false
+        uiState.showMysteryCone = false
+        uiState.isRewardDoubled = false
         uiState.earnedCoins = 0
     }
 
@@ -85,9 +94,24 @@ final class GameViewModel: ObservableObject {
         startGame()
     }
 
+    func onRequestNextLevel() {
+        if uiState.level % 2 == 0 && uiState.stars >= 1 {
+            uiState.showResultsOverlay = false
+            uiState.showMysteryCone = true
+        } else {
+            nextLevel()
+        }
+    }
+
+    func onDismissMysteryCone() {
+        uiState.showMysteryCone = false
+        nextLevel()
+    }
+
     func nextLevel() {
         stopPouring()
-        let nextLvl = uiState.level + 1
+        let rawNext = uiState.level + 1
+        let nextLvl = rawNext > 20 ? 1 : rawNext
         repository.saveLevel(nextLvl)
         let config = LevelDataProvider.getLevel(nextLvl)
         uiState.level = nextLvl
@@ -95,6 +119,7 @@ final class GameViewModel: ObservableObject {
         uiState.showTutorial = false
         uiState.customerVariant = (nextLvl - 1) % 5
         uiState.showResultsOverlay = false
+        uiState.showMysteryCone = false
         startGame()
     }
 
@@ -139,11 +164,17 @@ final class GameViewModel: ObservableObject {
             )
 
             self.uiState.pourProgress = newProgress
+            self.uiState.userPouredSegments = self.recordedSegments
 
             if newProgress >= self.maxPourProgress {
                 self.stopPouring()
                 self.uiState.activeFlavors.removeAll()
-                self.evaluateScore(finalProgress: newProgress)
+                let cfg = self.uiState.targetConfig
+                if cfg.sprinklesCount > 0 || cfg.hasCherry {
+                    self.uiState.phase = .decorating
+                } else {
+                    self.evaluateScore(finalProgress: newProgress)
+                }
             }
         }
     }
@@ -178,8 +209,30 @@ final class GameViewModel: ObservableObject {
         }
     }
 
+    func onDecorateTapped() {
+        guard uiState.phase == .decorating && !uiState.isDecorated else { return }
+        let bonus = uiState.decorationBonusCoins
+        soundHapticManager.playSuccessFeedback()
+        addCoins(bonus)
+        uiState.isDecorated = true
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.1) { [weak self] in
+            guard let self = self else { return }
+            self.evaluateScore(finalProgress: self.uiState.pourProgress)
+        }
+    }
+
+    func onDoubleRewardTapped() {
+        guard !uiState.isRewardDoubled else { return }
+        let currentEarned = uiState.earnedCoins
+        soundHapticManager.playSuccessFeedback()
+        addCoins(currentEarned)
+        uiState.earnedCoins = currentEarned * 2
+        uiState.isRewardDoubled = true
+    }
+
     func completeMinigame() {
-        uiState.phase = .blenderMinigame
+        uiState.phase = uiState.targetConfig.phaseAfterSlicing()
     }
 
     func completeBlender() {

@@ -77,8 +77,17 @@ class MainActivity : ComponentActivity() {
                                 onResetProgress = {
                                     viewModel.resetProgress()
                                 },
+                                onDecorateClick = {
+                                    viewModel.onDecorateClicked()
+                                },
+                                onDoubleReward = {
+                                    viewModel.onDoubleRewardClicked()
+                                },
+                                onDismissMysteryCone = {
+                                    viewModel.onDismissMysteryCone()
+                                },
                                 onNextLevel = {
-                                    viewModel.nextLevel()
+                                    viewModel.onRequestNextLevel()
                                 },
                                 onReplayLevel = {
                                     viewModel.restartLevel()

@@ -24,6 +24,7 @@ import java.nio.FloatBuffer
 import java.nio.ShortBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
+import kotlin.math.sin
 
 @Composable
 fun IceCreamSceneView(
@@ -33,6 +34,7 @@ fun IceCreamSceneView(
     extraCones: Int = 1,
     sprinklesCount: Int = 0,
     hasCherry: Boolean = false,
+    isDecorated: Boolean = false,
     level: Int = 1,
     gamePhase: GamePhase = GamePhase.POURING,
     customerVariant: Int = 0,
@@ -49,6 +51,7 @@ fun IceCreamSceneView(
         extraCones,
         sprinklesCount,
         hasCherry,
+        isDecorated,
         level,
         gamePhase,
         customerVariant,
@@ -61,6 +64,7 @@ fun IceCreamSceneView(
             extraCones = extraCones,
             sprinklesCount = sprinklesCount,
             hasCherry = hasCherry,
+            isDecorated = isDecorated,
             level = level,
             gamePhase = gamePhase,
             customerVariant = customerVariant,
@@ -100,6 +104,7 @@ class IceCreamGLSurfaceView(context: Context) : GLSurfaceView(context) {
         extraCones: Int,
         sprinklesCount: Int,
         hasCherry: Boolean,
+        isDecorated: Boolean,
         level: Int,
         gamePhase: GamePhase,
         customerVariant: Int,
@@ -111,6 +116,7 @@ class IceCreamGLSurfaceView(context: Context) : GLSurfaceView(context) {
         renderer.extraCones = extraCones
         renderer.sprinklesCount = sprinklesCount
         renderer.hasCherry = hasCherry
+        renderer.isDecorated = isDecorated
         renderer.level = level
         renderer.gamePhase = gamePhase
         renderer.customerVariant = customerVariant
@@ -125,6 +131,7 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
     @Volatile var extraCones: Int = 1
     @Volatile var sprinklesCount: Int = 0
     @Volatile var hasCherry: Boolean = false
+    @Volatile var isDecorated: Boolean = false
     @Volatile var level: Int = 1
     @Volatile var gamePhase: GamePhase = GamePhase.POURING
     @Volatile var customerVariant: Int = 0
@@ -176,6 +183,8 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
     private lateinit var streamMesh: ConeMesh
     private lateinit var sprinkleMesh: ConeMesh
     private lateinit var cherryMesh: ConeMesh
+    private lateinit var cherryStemMesh: ConeMesh
+    private var customerAnimTime = 0.0f
 
     // Customer & Shop Meshes
     private lateinit var boxMesh: ConeMesh
@@ -225,6 +234,7 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
         streamMesh = SoftServeGenerator.generateStreamMesh(startY = 0.5f, endY = -0.5f, radius = 0.06f)
         sprinkleMesh = ConeGenerator.generateCylinder(radius = 0.02f, height = 0.08f, segments = 8)
         cherryMesh = DecorationGenerator.generateCherry(radius = 0.12f)
+        cherryStemMesh = DecorationGenerator.generateCherryStem()
 
         // Customer & Environment geometry
         boxMesh = CustomerGenerator.createBoxMesh(1f, 1f, 1f)
@@ -251,8 +261,16 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
             if (coneRotationAngle >= 360.0f) coneRotationAngle -= 360.0f
         }
 
+        if (gamePhase == GamePhase.CUSTOMER_REACTION) {
+            customerAnimTime += dt
+        } else {
+            customerAnimTime = 0.0f
+        }
+
         updateSoftServeExtrusion()
-        updateDollarParticles(dt)
+        if (gamePhase == GamePhase.CUSTOMER_REACTION && stars == 3) {
+            updateDollarParticles(dt)
+        }
 
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT or GLES30.GL_DEPTH_BUFFER_BIT)
 
@@ -266,33 +284,43 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
 
         val coneY = -0.62f - (pourProgress * 0.70f)
 
-        // 1. Darker Pink Floor Plane
-        Matrix.setIdentityM(modelMatrix, 0)
-        Matrix.translateM(modelMatrix, 0, 0.0f, -1.16f, 0.0f)
-        Matrix.rotateM(modelMatrix, 0, -90f, 1.0f, 0.0f, 0.0f)
-        drawMesh(floorPlaneMesh, programId, floatArrayOf(0.91f, 0.28f, 0.45f, 1.0f))
+        // 1. Darker Pink Floor Plane (Hidden during DECORATING so swirl background fills view)
+        if (gamePhase != GamePhase.DECORATING) {
+            Matrix.setIdentityM(modelMatrix, 0)
+            Matrix.translateM(modelMatrix, 0, 0.0f, -1.16f, 0.0f)
+            Matrix.rotateM(modelMatrix, 0, -90f, 1.0f, 0.0f, 0.0f)
+            drawMesh(floorPlaneMesh, programId, floatArrayOf(0.91f, 0.28f, 0.45f, 1.0f))
+        }
 
-        // 2. Shop Interior (when level >= 5)
-        if (level >= 5) {
+        // 2. Shop Interior (when level >= 5 and not decorating)
+        if (level >= 5 && gamePhase != GamePhase.DECORATING) {
             renderShopInterior()
         }
 
         // 3. Render Floor Soft Shadow under cone
-        Matrix.setIdentityM(modelMatrix, 0)
-        Matrix.translateM(modelMatrix, 0, 0.0f, -1.15f, 0.0f)
-        drawMesh(shadowMesh, programId, SceneLighting.shadowColor)
-
-        // 4. Render Customer in Reaction Phase
-        if (gamePhase == GamePhase.CUSTOMER_REACTION) {
-            renderCustomer(stars == 3)
-            renderDollarParticles()
+        if (gamePhase != GamePhase.CUSTOMER_REACTION) {
+            Matrix.setIdentityM(modelMatrix, 0)
+            Matrix.translateM(modelMatrix, 0, 0.0f, -1.15f, 0.0f)
+            drawMesh(shadowMesh, programId, SceneLighting.shadowColor)
         }
 
-        // 5. Render Cones & Ice Cream
-        renderIceCream(coneY)
+        // 4. Render Customer in Reaction Phase (and Dollar Particles only on 3 stars)
+        if (gamePhase == GamePhase.CUSTOMER_REACTION) {
+            renderCustomer(stars == 3)
+            if (stars == 3) {
+                renderDollarParticles()
+            }
+        }
 
-        // 6. Render Silver Metallic Dispenser & Canisters
-        if (gamePhase != GamePhase.CUSTOMER_REACTION) {
+        // 5. Render Cones & Ice Cream (placed in customer's left hand during CUSTOMER_REACTION)
+        if (gamePhase == GamePhase.CUSTOMER_REACTION) {
+            renderIceCream(coneY = -0.56f, coneX = -0.35f, coneZ = -0.32f, coneScale = 0.78f)
+        } else {
+            renderIceCream(coneY = coneY)
+        }
+
+        // 6. Render Silver Metallic Dispenser & Canisters (only during pouring)
+        if (gamePhase == GamePhase.POURING) {
             renderDispenserAndStream()
         }
     }
@@ -303,23 +331,61 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
         Matrix.translateM(modelMatrix, 0, 0.0f, 0.6f, -1.8f)
         drawMesh(wallPlaneMesh, programId, floatArrayOf(1.0f, 0.82f, 0.85f, 1.0f))
 
-        // Framed Poster
+        // Horizontal wooden slats (tường kẻ gỗ ngang)
+        val slatYs = floatArrayOf(-0.4f, 0.0f, 0.4f, 0.8f, 1.2f, 1.6f)
+        for (sy in slatYs) {
+            Matrix.setIdentityM(modelMatrix, 0)
+            Matrix.translateM(modelMatrix, 0, 0.0f, sy, -1.78f)
+            Matrix.scaleM(modelMatrix, 0, 5.0f, 0.03f, 0.02f)
+            drawMesh(boxMesh, programId, floatArrayOf(0.94f, 0.72f, 0.76f, 1.0f))
+        }
+
+        // Framed Poster with Ice Cream artwork inside
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, -0.05f, 1.35f, -1.75f)
         Matrix.scaleM(modelMatrix, 0, 0.75f, 0.95f, 0.05f)
         drawMesh(boxMesh, programId, floatArrayOf(0.98f, 0.98f, 0.98f, 1.0f))
 
-        // Teal Soft-serve Machine on the left
+        // Inner pink poster mat
+        Matrix.setIdentityM(modelMatrix, 0)
+        Matrix.translateM(modelMatrix, 0, -0.05f, 1.35f, -1.72f)
+        Matrix.scaleM(modelMatrix, 0, 0.62f, 0.80f, 0.02f)
+        drawMesh(boxMesh, programId, floatArrayOf(0.99f, 0.90f, 0.92f, 1.0f))
+
+        // Mini ice cream art inside poster (cone + pink scoop)
+        Matrix.setIdentityM(modelMatrix, 0)
+        Matrix.translateM(modelMatrix, 0, -0.05f, 1.20f, -1.69f)
+        Matrix.scaleM(modelMatrix, 0, 0.14f, 0.22f, 0.03f)
+        drawMesh(boxMesh, programId, floatArrayOf(0.92f, 0.71f, 0.44f, 1.0f))
+
+        Matrix.setIdentityM(modelMatrix, 0)
+        Matrix.translateM(modelMatrix, 0, -0.05f, 1.40f, -1.68f)
+        Matrix.scaleM(modelMatrix, 0, 0.95f, 0.95f, 0.4f)
+        drawMesh(cherryMesh, programId, floatArrayOf(1.0f, 0.46f, 0.66f, 1.0f))
+
+        // Mint / Teal Soft-serve Machine on the left with silver levers
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, -1.25f, 0.35f, -1.3f)
         Matrix.scaleM(modelMatrix, 0, 0.75f, 1.3f, 0.65f)
-        drawMesh(boxMesh, programId, floatArrayOf(0.20f, 0.76f, 0.78f, 1.0f))
+        drawMesh(boxMesh, programId, floatArrayOf(0.24f, 0.84f, 0.76f, 1.0f))
 
-        // Front Pink Counter Table
+        for (i in -1..1) {
+            Matrix.setIdentityM(modelMatrix, 0)
+            Matrix.translateM(modelMatrix, 0, -1.25f + i * 0.16f, 0.68f, -0.95f)
+            Matrix.scaleM(modelMatrix, 0, 0.05f, 0.22f, 0.06f)
+            drawMesh(boxMesh, programId, floatArrayOf(0.88f, 0.90f, 0.92f, 1.0f))
+        }
+
+        // Front Pink Counter Table with white top trim
         Matrix.setIdentityM(modelMatrix, 0)
         Matrix.translateM(modelMatrix, 0, 0.0f, -1.18f, -0.3f)
         Matrix.scaleM(modelMatrix, 0, 3.8f, 0.85f, 0.9f)
         drawMesh(boxMesh, programId, floatArrayOf(1.0f, 0.44f, 0.62f, 1.0f))
+
+        Matrix.setIdentityM(modelMatrix, 0)
+        Matrix.translateM(modelMatrix, 0, 0.0f, -0.74f, -0.3f)
+        Matrix.scaleM(modelMatrix, 0, 3.85f, 0.07f, 0.94f)
+        drawMesh(boxMesh, programId, floatArrayOf(1.0f, 0.92f, 0.95f, 1.0f))
     }
 
     private fun renderCustomer(isThumbsUp: Boolean) {
@@ -349,28 +415,39 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
         Matrix.scaleM(modelMatrix, 0, 0.16f, 0.16f, 0.16f)
         drawMesh(boxMesh, programId, variant.skinColor)
 
+        // Head animation offsets (happy nod for 3 stars, sad droop for < 3)
+        val headBobY = if (isThumbsUp) sin(customerAnimTime * 7.0f) * 0.025f else -0.04f
+        val headPitch = if (isThumbsUp) sin(customerAnimTime * 7.0f) * 10.0f else 22.0f
+        val headYaw = if (isThumbsUp) 0.0f else sin(customerAnimTime * 3.5f) * 8.0f
+
         // Head
         Matrix.setIdentityM(modelMatrix, 0)
-        Matrix.translateM(modelMatrix, 0, cx, cy + 0.62f, cz)
+        Matrix.translateM(modelMatrix, 0, cx, cy + 0.62f + headBobY, cz)
+        Matrix.rotateM(modelMatrix, 0, headPitch, 1f, 0f, 0f)
+        Matrix.rotateM(modelMatrix, 0, headYaw, 0f, 1f, 0f)
         Matrix.scaleM(modelMatrix, 0, 0.36f, 0.40f, 0.32f)
         drawMesh(boxMesh, programId, variant.skinColor)
 
         // Hair Top
         Matrix.setIdentityM(modelMatrix, 0)
-        Matrix.translateM(modelMatrix, 0, cx, cy + 0.78f, cz)
+        Matrix.translateM(modelMatrix, 0, cx, cy + 0.78f + headBobY, cz)
+        Matrix.rotateM(modelMatrix, 0, headPitch, 1f, 0f, 0f)
+        Matrix.rotateM(modelMatrix, 0, headYaw, 0f, 1f, 0f)
         Matrix.scaleM(modelMatrix, 0, 0.39f, 0.14f, 0.35f)
         drawMesh(boxMesh, programId, variant.hairColor)
 
         if (variant.hasLongHair) {
             // Left long hair strand
             Matrix.setIdentityM(modelMatrix, 0)
-            Matrix.translateM(modelMatrix, 0, cx - 0.21f, cy + 0.52f, cz + 0.02f)
+            Matrix.translateM(modelMatrix, 0, cx - 0.21f, cy + 0.52f + headBobY, cz + 0.02f)
+            Matrix.rotateM(modelMatrix, 0, headPitch, 1f, 0f, 0f)
             Matrix.scaleM(modelMatrix, 0, 0.08f, 0.48f, 0.24f)
             drawMesh(boxMesh, programId, variant.hairColor)
 
             // Right long hair strand
             Matrix.setIdentityM(modelMatrix, 0)
-            Matrix.translateM(modelMatrix, 0, cx + 0.21f, cy + 0.52f, cz + 0.02f)
+            Matrix.translateM(modelMatrix, 0, cx + 0.21f, cy + 0.52f + headBobY, cz + 0.02f)
+            Matrix.rotateM(modelMatrix, 0, headPitch, 1f, 0f, 0f)
             Matrix.scaleM(modelMatrix, 0, 0.08f, 0.48f, 0.24f)
             drawMesh(boxMesh, programId, variant.hairColor)
         }
@@ -378,7 +455,9 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
         // Sunglasses (if applicable)
         if (variant.hasSunglasses) {
             Matrix.setIdentityM(modelMatrix, 0)
-            Matrix.translateM(modelMatrix, 0, cx, cy + 0.64f, cz + 0.18f)
+            Matrix.translateM(modelMatrix, 0, cx, cy + 0.64f + headBobY, cz + 0.18f)
+            Matrix.rotateM(modelMatrix, 0, headPitch, 1f, 0f, 0f)
+            Matrix.rotateM(modelMatrix, 0, headYaw, 0f, 1f, 0f)
             Matrix.scaleM(modelMatrix, 0, 0.34f, 0.10f, 0.04f)
             drawMesh(boxMesh, programId, floatArrayOf(0.12f, 0.12f, 0.14f, 1.0f))
         }
@@ -439,58 +518,81 @@ class IceCreamRenderer : GLSurfaceView.Renderer {
         }
     }
 
-    private fun renderIceCream(coneY: Float) {
+    private fun renderIceCream(
+        coneY: Float,
+        coneX: Float = 0.0f,
+        coneZ: Float = 0.0f,
+        coneScale: Float = 1.0f
+    ) {
         // Extra Stacked Cones
         if (extraCones >= 2) {
             Matrix.setIdentityM(modelMatrix, 0)
-            Matrix.translateM(modelMatrix, 0, 0.0f, coneY - 0.45f, 0.0f)
+            Matrix.translateM(modelMatrix, 0, coneX, coneY - 0.45f * coneScale, coneZ)
             Matrix.rotateM(modelMatrix, 0, coneRotationAngle, 0.0f, 1.0f, 0.0f)
+            Matrix.scaleM(modelMatrix, 0, coneScale, coneScale, coneScale)
             drawMesh(coneMesh, waffleProgramId, floatArrayOf(0.88f, 0.74f, 0.52f, 1.0f))
         }
 
         // Main Waffle Cone with Procedural Diamond Grid Shader
         Matrix.setIdentityM(modelMatrix, 0)
-        Matrix.translateM(modelMatrix, 0, 0.0f, coneY, 0.0f)
+        Matrix.translateM(modelMatrix, 0, coneX, coneY, coneZ)
         Matrix.rotateM(modelMatrix, 0, coneRotationAngle, 0.0f, 1.0f, 0.0f)
+        Matrix.scaleM(modelMatrix, 0, coneScale, coneScale, coneScale)
         drawMesh(coneMesh, waffleProgramId, floatArrayOf(0.92f, 0.78f, 0.56f, 1.0f))
 
         // Cone Rim
         Matrix.setIdentityM(modelMatrix, 0)
-        Matrix.translateM(modelMatrix, 0, 0.0f, coneY + 0.47f, 0.0f)
+        Matrix.translateM(modelMatrix, 0, coneX, coneY + 0.47f * coneScale, coneZ)
         Matrix.rotateM(modelMatrix, 0, coneRotationAngle, 0.0f, 1.0f, 0.0f)
+        Matrix.scaleM(modelMatrix, 0, coneScale, coneScale, coneScale)
         drawMesh(coneRimMesh, programId, floatArrayOf(0.90f, 0.77f, 0.54f, 1.0f))
 
         // Swirl Mesh
         if (meshExtruder.currentRingCount >= 2) {
             Matrix.setIdentityM(modelMatrix, 0)
-            Matrix.translateM(modelMatrix, 0, 0.0f, coneY + 0.48f, 0.0f)
+            Matrix.translateM(modelMatrix, 0, coneX, coneY + 0.48f * coneScale, coneZ)
             Matrix.rotateM(modelMatrix, 0, coneRotationAngle, 0.0f, 1.0f, 0.0f)
+            Matrix.scaleM(modelMatrix, 0, coneScale, coneScale, coneScale)
             drawSwirlMesh()
 
-            // Sprinkles
-            if (sprinklesCount > 0) {
-                if (sprinklesCount != lastSprinklesCount || cachedSprinkles.isEmpty()) {
-                    cachedSprinkles = DecorationGenerator.createRandomSprinkles(sprinklesCount, pourProgress)
-                    lastSprinklesCount = sprinklesCount
-                }
-                for (sp in cachedSprinkles) {
-                    Matrix.setIdentityM(modelMatrix, 0)
-                    Matrix.translateM(modelMatrix, 0, 0.0f, coneY + 0.48f, 0.0f)
-                    Matrix.rotateM(modelMatrix, 0, coneRotationAngle, 0.0f, 1.0f, 0.0f)
-                    Matrix.translateM(modelMatrix, 0, sp.x, sp.y, sp.z)
-                    Matrix.rotateM(modelMatrix, 0, sp.rotX, 1f, 0f, 0f)
-                    Matrix.rotateM(modelMatrix, 0, sp.rotY, 0f, 1f, 0f)
-                    drawMesh(sprinkleMesh, programId, sp.color)
-                }
-            }
+            val showDecorations = isDecorated ||
+                gamePhase == GamePhase.CUSTOMER_REACTION ||
+                gamePhase == GamePhase.EVALUATING
 
-            // Cherry
-            if (hasCherry) {
-                val peakY = coneY + 0.48f + (pourProgress * 1.55f)
-                Matrix.setIdentityM(modelMatrix, 0)
-                Matrix.translateM(modelMatrix, 0, 0.0f, peakY + 0.08f, 0.0f)
-                Matrix.rotateM(modelMatrix, 0, coneRotationAngle, 0.0f, 1.0f, 0.0f)
-                drawMesh(cherryMesh, programId, floatArrayOf(0.92f, 0.08f, 0.16f, 1.0f))
+            if (showDecorations) {
+                // Sprinkles
+                if (sprinklesCount > 0) {
+                    if (sprinklesCount != lastSprinklesCount || cachedSprinkles.isEmpty()) {
+                        cachedSprinkles = DecorationGenerator.createRandomSprinkles(sprinklesCount, pourProgress)
+                        lastSprinklesCount = sprinklesCount
+                    }
+                    for (sp in cachedSprinkles) {
+                        Matrix.setIdentityM(modelMatrix, 0)
+                        Matrix.translateM(modelMatrix, 0, coneX, coneY + 0.48f * coneScale, coneZ)
+                        Matrix.rotateM(modelMatrix, 0, coneRotationAngle, 0.0f, 1.0f, 0.0f)
+                        Matrix.scaleM(modelMatrix, 0, coneScale, coneScale, coneScale)
+                        Matrix.translateM(modelMatrix, 0, sp.x, sp.y, sp.z)
+                        Matrix.rotateM(modelMatrix, 0, sp.rotX, 1f, 0f, 0f)
+                        Matrix.rotateM(modelMatrix, 0, sp.rotY, 0f, 1f, 0f)
+                        drawMesh(sprinkleMesh, programId, sp.color)
+                    }
+                }
+
+                // Cherry + Curved Stem
+                if (hasCherry) {
+                    val peakY = coneY + (0.48f + (pourProgress * 1.55f)) * coneScale
+                    Matrix.setIdentityM(modelMatrix, 0)
+                    Matrix.translateM(modelMatrix, 0, coneX, peakY + 0.08f * coneScale, coneZ)
+                    Matrix.rotateM(modelMatrix, 0, coneRotationAngle, 0.0f, 1.0f, 0.0f)
+                    Matrix.scaleM(modelMatrix, 0, coneScale, coneScale, coneScale)
+                    drawMesh(cherryMesh, programId, floatArrayOf(0.92f, 0.08f, 0.16f, 1.0f))
+
+                    Matrix.setIdentityM(modelMatrix, 0)
+                    Matrix.translateM(modelMatrix, 0, coneX, peakY + 0.08f * coneScale, coneZ)
+                    Matrix.rotateM(modelMatrix, 0, coneRotationAngle, 0.0f, 1.0f, 0.0f)
+                    Matrix.scaleM(modelMatrix, 0, coneScale, coneScale, coneScale)
+                    drawMesh(cherryStemMesh, programId, floatArrayOf(0.35f, 0.22f, 0.12f, 1.0f))
+                }
             }
         }
     }

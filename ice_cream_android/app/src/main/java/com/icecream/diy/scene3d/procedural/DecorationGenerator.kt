@@ -82,6 +82,73 @@ object DecorationGenerator {
         return ConeMesh(vBuf, iBuf, indices.size)
     }
 
+    /**
+     * Procedural curved low-poly cherry stem using a swept tube along a quadratic Bezier curve.
+     */
+    fun generateCherryStem(
+        segments: Int = 8,
+        radialSegments: Int = 6,
+        radius: Float = 0.015f
+    ): ConeMesh {
+        val verticesList = mutableListOf<Float>()
+        val indicesList = mutableListOf<Short>()
+
+        for (i in 0..segments) {
+            val t = i.toFloat() / segments.toFloat()
+            // Quadratic Bezier from (0, 0.08, 0) -> control (0.01, 0.22, 0) -> end (0.11, 0.29, 0.02)
+            val oneMinusT = 1f - t
+            val cx = oneMinusT * oneMinusT * 0f + 2f * oneMinusT * t * 0.01f + t * t * 0.11f
+            val cy = oneMinusT * oneMinusT * 0.08f + 2f * oneMinusT * t * 0.22f + t * t * 0.29f
+            val cz = oneMinusT * oneMinusT * 0f + 2f * oneMinusT * t * 0f + t * t * 0.02f
+
+            for (j in 0..radialSegments) {
+                val u = j.toFloat() / radialSegments.toFloat()
+                val angle = u * 2.0f * Math.PI.toFloat()
+                val nx = cos(angle)
+                val nz = sin(angle)
+
+                verticesList.add(cx + radius * nx)
+                verticesList.add(cy)
+                verticesList.add(cz + radius * nz)
+                verticesList.add(nx)
+                verticesList.add(0.2f)
+                verticesList.add(nz)
+                verticesList.add(u)
+                verticesList.add(t)
+            }
+        }
+
+        val ringStride = radialSegments + 1
+        for (i in 0 until segments) {
+            for (j in 0 until radialSegments) {
+                val first = (i * ringStride + j).toShort()
+                val second = (first + ringStride).toShort()
+                indicesList.add(first)
+                indicesList.add(second)
+                indicesList.add((first + 1).toShort())
+
+                indicesList.add(second)
+                indicesList.add((second + 1).toShort())
+                indicesList.add((first + 1).toShort())
+            }
+        }
+
+        val vertices = verticesList.toFloatArray()
+        val indices = indicesList.toShortArray()
+
+        val vBuf = ByteBuffer.allocateDirect(vertices.size * 4)
+            .order(ByteOrder.nativeOrder())
+            .asFloatBuffer()
+            .apply { put(vertices); position(0) }
+
+        val iBuf = ByteBuffer.allocateDirect(indices.size * 2)
+            .order(ByteOrder.nativeOrder())
+            .asShortBuffer()
+            .apply { put(indices); position(0) }
+
+        return ConeMesh(vBuf, iBuf, indices.size)
+    }
+
     // Procedural Sprinkles Batch (Capsules with various positions, rotations and pastel colors)
     data class SprinkleItem(
         val x: Float,

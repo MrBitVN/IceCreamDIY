@@ -8,6 +8,7 @@ struct IceCreamSceneView: UIViewRepresentable {
     let extraCones: Int
     let sprinklesCount: Int
     let hasCherry: Bool
+    let isDecorated: Bool
     let level: Int
     let gamePhase: GamePhase
     let customerVariant: Int
@@ -20,6 +21,7 @@ struct IceCreamSceneView: UIViewRepresentable {
         extraCones: Int = 1,
         sprinklesCount: Int = 0,
         hasCherry: Bool = false,
+        isDecorated: Bool = false,
         level: Int = 1,
         gamePhase: GamePhase = .pouring,
         customerVariant: Int = 0,
@@ -31,6 +33,7 @@ struct IceCreamSceneView: UIViewRepresentable {
         self.extraCones = extraCones
         self.sprinklesCount = sprinklesCount
         self.hasCherry = hasCherry
+        self.isDecorated = isDecorated
         self.level = level
         self.gamePhase = gamePhase
         self.customerVariant = customerVariant
@@ -113,6 +116,7 @@ struct IceCreamSceneView: UIViewRepresentable {
             extraCones: extraCones,
             sprinklesCount: sprinklesCount,
             hasCherry: hasCherry,
+            isDecorated: isDecorated,
             level: level,
             gamePhase: gamePhase,
             customerVariant: customerVariant,
@@ -146,6 +150,7 @@ struct IceCreamSceneView: UIViewRepresentable {
             extraCones: Int,
             sprinklesCount: Int,
             hasCherry: Bool,
+            isDecorated: Bool,
             level: Int,
             gamePhase: GamePhase,
             customerVariant: Int,
@@ -193,22 +198,27 @@ struct IceCreamSceneView: UIViewRepresentable {
                     scene.rootNode.addChildNode(cust)
                     customerNode = cust
 
-                    let dollars = CustomerGenerator.createDollarBillsNode(count: 16)
-                    scene.rootNode.addChildNode(dollars)
-                    dollarBillsNode = dollars
+                    if stars == 3 {
+                        let dollars = CustomerGenerator.createDollarBillsNode(count: 16)
+                        scene.rootNode.addChildNode(dollars)
+                        dollarBillsNode = dollars
+                    }
                 }
+                // Place cone in customer's left hand behind counter
+                cone.position = SCNVector3(-0.35, -0.56, -0.32)
+                cone.scale = SCNVector3(0.78, 0.78, 0.78)
             } else {
-                dispenser.isHidden = false
+                dispenser.isHidden = (gamePhase == .decorating)
                 customerNode?.removeFromParentNode()
                 customerNode = nil
                 dollarBillsNode?.removeFromParentNode()
                 dollarBillsNode = nil
-            }
 
-            // Lower cone smoothly as ice cream dâng cao
-            let baseConeY: Float = -0.62
-            let currentConeY = baseConeY - (pourProgress * 0.70)
-            cone.position.y = currentConeY
+                let baseConeY: Float = -0.62
+                let currentConeY = baseConeY - (pourProgress * 0.70)
+                cone.position = SCNVector3(0, currentConeY, 0)
+                cone.scale = SCNVector3(1.0, 1.0, 1.0)
+            }
 
             // Stacked extra cone
             if extraCones >= 2 && stackedConeNode == nil {
@@ -233,12 +243,13 @@ struct IceCreamSceneView: UIViewRepresentable {
             }
 
             // Dynamic Pouring Stream connecting nozzle tip (Y = 1.05) to current ice cream peak
-            if !activeFlavors.isEmpty && pourProgress < 1.0 && gamePhase != .customerReaction {
+            if !activeFlavors.isEmpty && pourProgress < 1.0 && gamePhase == .pouring {
                 stream.isHidden = false
                 let primaryColor = activeFlavors.first?.uiColor ?? UIColor.white
                 stream.geometry?.firstMaterial?.diffuse.contents = primaryColor
 
                 let nozzleTipY: Float = 1.05
+                let currentConeY = -0.62 - (pourProgress * 0.70)
                 let peakY = currentConeY + 0.48 + (pourProgress * 1.55)
                 let streamHeight = max(nozzleTipY - peakY, 0.04)
                 let streamCenterY = nozzleTipY - (streamHeight / 2.0)
@@ -250,8 +261,10 @@ struct IceCreamSceneView: UIViewRepresentable {
                 stream.isHidden = true
             }
 
+            let showDecorations = isDecorated || gamePhase == .customerReaction || gamePhase == .evaluating
+
             // Sprinkles
-            if sprinklesCount > 0 && sprinklesCount != lastSprinklesCount {
+            if showDecorations && sprinklesCount > 0 && sprinklesCount != lastSprinklesCount {
                 sprinkleNodes.forEach { $0.removeFromParentNode() }
                 sprinkleNodes = DecorationGenerator.createSprinkleNodes(count: sprinklesCount, totalProgress: pourProgress)
                 sprinkleNodes.forEach { swirl.addChildNode($0) }
@@ -259,7 +272,7 @@ struct IceCreamSceneView: UIViewRepresentable {
             }
 
             // Cherry
-            if hasCherry && cherryNode == nil {
+            if showDecorations && hasCherry && cherryNode == nil {
                 let cNode = DecorationGenerator.createCherryNode()
                 let peakY = Float(pourProgress * 1.55) + 0.06
                 cNode.position = SCNVector3(0, peakY, 0)

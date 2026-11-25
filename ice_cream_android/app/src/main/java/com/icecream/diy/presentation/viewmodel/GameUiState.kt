@@ -28,5 +28,9 @@ data class GameUiState(
     val isHapticsEnabled: Boolean = true,
     val showSettingsDialog: Boolean = false,
     val showResultsOverlay: Boolean = false,
+    val isDecorated: Boolean = false,
+    val decorationBonusCoins: Int = 15,
+    val showMysteryCone: Boolean = false,
+    val isRewardDoubled: Boolean = false,
     val sessionNonce: Int = 0
 )

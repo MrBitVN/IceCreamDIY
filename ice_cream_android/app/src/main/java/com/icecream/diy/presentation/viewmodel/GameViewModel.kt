@@ -98,6 +98,9 @@ class GameViewModel(
                 showTutorial = currentLvl == 1,
                 customerVariant = (currentLvl - 1) % 5,
                 showResultsOverlay = false,
+                isDecorated = false,
+                showMysteryCone = false,
+                isRewardDoubled = false,
                 earnedCoins = 0,
                 sessionNonce = it.sessionNonce + 1
             )
@@ -108,9 +111,29 @@ class GameViewModel(
         startGame()
     }
 
+    fun onRequestNextLevel() {
+        val currentLvl = _uiState.value.level
+        if (currentLvl % 2 == 0 && _uiState.value.stars >= 1) {
+            _uiState.update {
+                it.copy(
+                    showResultsOverlay = false,
+                    showMysteryCone = true
+                )
+            }
+        } else {
+            nextLevel()
+        }
+    }
+
+    fun onDismissMysteryCone() {
+        _uiState.update { it.copy(showMysteryCone = false) }
+        nextLevel()
+    }
+
     fun nextLevel() {
         stopPouring()
-        val nextLvl = _uiState.value.level + 1
+        val rawNext = _uiState.value.level + 1
+        val nextLvl = if (rawNext > 20) 1 else rawNext
         viewModelScope.launch {
             repository.saveLevel(nextLvl)
         }
@@ -121,7 +144,8 @@ class GameViewModel(
                 targetConfig = config,
                 showTutorial = false,
                 customerVariant = (nextLvl - 1) % 5,
-                showResultsOverlay = false
+                showResultsOverlay = false,
+                showMysteryCone = false
             )
         }
         startGame()
@@ -184,8 +208,18 @@ class GameViewModel(
 
                 if (newProgress >= maxPourProgress) {
                     stopPouring()
-                    _uiState.update { it.copy(activeFlavors = emptySet()) }
-                    evaluateScore(newProgress)
+                    val cfg = _uiState.value.targetConfig
+                    if (cfg.sprinklesCount > 0 || cfg.hasCherry) {
+                        _uiState.update {
+                            it.copy(
+                                activeFlavors = emptySet(),
+                                phase = GamePhase.DECORATING
+                            )
+                        }
+                    } else {
+                        _uiState.update { it.copy(activeFlavors = emptySet()) }
+                        evaluateScore(newProgress)
+                    }
                     break
                 }
 
@@ -229,6 +263,31 @@ class GameViewModel(
             soundHapticManager?.playSuccessFeedback()
             addCoins(reward)
             _uiState.update { it.copy(showResultsOverlay = true) }
+        }
+    }
+
+    fun onDecorateClicked() {
+        if (_uiState.value.phase != GamePhase.DECORATING || _uiState.value.isDecorated) return
+        val bonus = _uiState.value.decorationBonusCoins
+        soundHapticManager?.playSuccessFeedback()
+        addCoins(bonus)
+        _uiState.update { it.copy(isDecorated = true) }
+        viewModelScope.launch {
+            delay(1100)
+            evaluateScore(_uiState.value.pourProgress)
+        }
+    }
+
+    fun onDoubleRewardClicked() {
+        if (_uiState.value.isRewardDoubled) return
+        val currentEarned = _uiState.value.earnedCoins
+        soundHapticManager?.playSuccessFeedback()
+        addCoins(currentEarned)
+        _uiState.update {
+            it.copy(
+                earnedCoins = currentEarned * 2,
+                isRewardDoubled = true
+            )
         }
     }
 

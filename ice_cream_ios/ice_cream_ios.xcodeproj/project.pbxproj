@@ -43,6 +43,7 @@
 		1035 /* MinigameProceduralGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2035 /* MinigameProceduralGenerator.swift */; };
 		1036 /* MinigameSceneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2036 /* MinigameSceneView.swift */; };
 		1037 /* BlenderMinigameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2037 /* BlenderMinigameView.swift */; };
+		1038 /* MysteryConeOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2038 /* MysteryConeOverlayView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -84,6 +85,7 @@
 		2035 /* MinigameProceduralGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinigameProceduralGenerator.swift; sourceTree = "<group>"; };
 		2036 /* MinigameSceneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinigameSceneView.swift; sourceTree = "<group>"; };
 		2037 /* BlenderMinigameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlenderMinigameView.swift; sourceTree = "<group>"; };
+		2038 /* MysteryConeOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MysteryConeOverlayView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -173,6 +175,7 @@
 				2027 /* TutorialHandView.swift */,
 				2029 /* MinigameBoardView.swift */,
 				2037 /* BlenderMinigameView.swift */,
+				2038 /* MysteryConeOverlayView.swift */,
 				2030 /* ResultsOverlayView.swift */,
 				2031 /* SettingsDialogView.swift */,
 				2013 /* SplashScreen.swift */,
@@ -293,6 +296,7 @@
 				1035 /* MinigameProceduralGenerator.swift in Sources */,
 				1036 /* MinigameSceneView.swift in Sources */,
 				1037 /* BlenderMinigameView.swift in Sources */,
+				1038 /* MysteryConeOverlayView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

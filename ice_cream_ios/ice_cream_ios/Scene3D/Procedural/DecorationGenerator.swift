@@ -19,16 +19,38 @@ final class DecorationGenerator {
         let sphereNode = SCNNode(geometry: sphereGeo)
         rootNode.addChildNode(sphereNode)
 
-        // Curved stem
-        let stemGeo = SCNCylinder(radius: 0.015, height: 0.28)
+        // Curved low-poly stem along a quadratic Bezier curve
         let stemMat = SCNMaterial()
         stemMat.diffuse.contents = UIColor(red: 0.35, green: 0.22, blue: 0.12, alpha: 1.0)
-        stemGeo.materials = [stemMat]
+        stemMat.roughness.contents = 0.6
 
-        let stemNode = SCNNode(geometry: stemGeo)
-        stemNode.position = SCNVector3(0.04, 0.16, 0)
-        stemNode.eulerAngles = SCNVector3(0, 0, -Float.pi / 8.0)
-        rootNode.addChildNode(stemNode)
+        let segments = 6
+        var prevPt = SCNVector3(0, 0.09, 0)
+        for i in 1...segments {
+            let t = Float(i) / Float(segments)
+            let omt = 1.0 - t
+            let pt = SCNVector3(
+                omt * omt * 0.0 + 2.0 * omt * t * 0.015 + t * t * 0.11,
+                omt * omt * 0.09 + 2.0 * omt * t * 0.22 + t * t * 0.29,
+                omt * omt * 0.0 + 2.0 * omt * t * 0.0 + t * t * 0.02
+            )
+            let dx = pt.x - prevPt.x
+            let dy = pt.y - prevPt.y
+            let dz = pt.z - prevPt.z
+            let segLen = sqrt(dx * dx + dy * dy + dz * dz)
+
+            let segGeo = SCNCylinder(radius: 0.015, height: CGFloat(segLen))
+            segGeo.materials = [stemMat]
+            let segNode = SCNNode(geometry: segGeo)
+            segNode.position = SCNVector3(
+                (prevPt.x + pt.x) * 0.5,
+                (prevPt.y + pt.y) * 0.5,
+                (prevPt.z + pt.z) * 0.5
+            )
+            segNode.eulerAngles = SCNVector3(atan2(dz, dy), 0, -atan2(dx, dy))
+            rootNode.addChildNode(segNode)
+            prevPt = pt
+        }
 
         return rootNode
     }
