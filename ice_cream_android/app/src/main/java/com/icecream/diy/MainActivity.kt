@@ -86,6 +86,18 @@ class MainActivity : ComponentActivity() {
                                 onMinigameComplete = {
                                     viewModel.completeMinigame()
                                 },
+                                onBlenderComplete = {
+                                    viewModel.completeBlender()
+                                },
+                                onMinigamePulse = {
+                                    viewModel.triggerMinigamePulse()
+                                },
+                                onBlenderTick = {
+                                    viewModel.triggerBlenderTick()
+                                },
+                                onAwesomeFeedback = {
+                                    viewModel.triggerAwesomeFeedback()
+                                },
                                 onAddCoins = { amount ->
                                     viewModel.addCoins(amount)
                                 }

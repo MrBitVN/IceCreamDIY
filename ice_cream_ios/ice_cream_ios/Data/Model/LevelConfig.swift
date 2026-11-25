@@ -41,10 +41,21 @@ struct CustomerConfig: Codable {
     }
 }
 
+struct MinigamesConfig: Codable, Equatable {
+    let slicing: Bool
+    let blender: Bool
+
+    init(slicing: Bool = false, blender: Bool = false) {
+        self.slicing = slicing
+        self.blender = blender
+    }
+}
+
 struct LevelConfig: Identifiable, Codable {
     var id: Int { levelNumber }
     let levelNumber: Int
     let hasMinigame: Bool
+    let minigames: MinigamesConfig
     let availableFlavors: [Flavor]
     let targetLayers: [TargetLayer]
     let sprinklesCount: Int
@@ -55,6 +66,7 @@ struct LevelConfig: Identifiable, Codable {
     enum CodingKeys: String, CodingKey {
         case levelNumber
         case hasMinigame
+        case minigames
         case availableFlavors
         case targetLayers
         case sprinklesCount
@@ -66,6 +78,7 @@ struct LevelConfig: Identifiable, Codable {
     init(
         levelNumber: Int,
         hasMinigame: Bool = false,
+        minigames: MinigamesConfig? = nil,
         availableFlavors: [Flavor] = [.vanilla, .strawberry, .chocolate],
         targetLayers: [TargetLayer] = [TargetLayer(flavors: [.vanilla], proportion: 1.0)],
         sprinklesCount: Int = 0,
@@ -73,8 +86,10 @@ struct LevelConfig: Identifiable, Codable {
         extraCones: Int = 1,
         customer: CustomerConfig = CustomerConfig()
     ) {
+        let resolvedMini = minigames ?? MinigamesConfig(slicing: hasMinigame, blender: hasMinigame)
         self.levelNumber = levelNumber
-        self.hasMinigame = hasMinigame
+        self.hasMinigame = resolvedMini.slicing || resolvedMini.blender
+        self.minigames = resolvedMini
         self.availableFlavors = availableFlavors
         self.targetLayers = targetLayers
         self.sprinklesCount = sprinklesCount
@@ -86,7 +101,12 @@ struct LevelConfig: Identifiable, Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.levelNumber = try container.decode(Int.self, forKey: .levelNumber)
-        self.hasMinigame = try container.decode(Bool.self, forKey: .hasMinigame)
+        let legacyMini = try container.decodeIfPresent(Bool.self, forKey: .hasMinigame) ?? false
+        let decodedMinigames = try container.decodeIfPresent(MinigamesConfig.self, forKey: .minigames)
+            ?? MinigamesConfig(slicing: legacyMini, blender: legacyMini)
+
+        self.minigames = decodedMinigames
+        self.hasMinigame = decodedMinigames.slicing || decodedMinigames.blender
 
         let flavorStrings = try container.decode([String].self, forKey: .availableFlavors)
         self.availableFlavors = flavorStrings.compactMap { Flavor(rawValue: $0) }
@@ -102,11 +122,26 @@ struct LevelConfig: Identifiable, Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(levelNumber, forKey: .levelNumber)
         try container.encode(hasMinigame, forKey: .hasMinigame)
+        try container.encode(minigames, forKey: .minigames)
         try container.encode(availableFlavors.map { $0.rawValue }, forKey: .availableFlavors)
         try container.encode(targetLayers, forKey: .targetLayers)
         try container.encode(sprinklesCount, forKey: .sprinklesCount)
         try container.encode(hasCherry, forKey: .hasCherry)
         try container.encode(extraCones, forKey: .extraCones)
         try container.encode(customer, forKey: .customer)
+    }
+
+    func initialPhase() -> GamePhase {
+        if minigames.slicing {
+            return .prepareMinigame
+        } else if minigames.blender {
+            return .blenderMinigame
+        } else {
+            return .pouring
+        }
+    }
+
+    func phaseAfterSlicing() -> GamePhase {
+        return minigames.blender ? .blenderMinigame : .pouring
     }
 }

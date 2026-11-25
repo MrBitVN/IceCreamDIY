@@ -8,6 +8,7 @@ enum class AppScreen {
 
 enum class GamePhase {
     PREPARE_MINIGAME,
+    BLENDER_MINIGAME,
     POURING,
     DECORATING,
     EVALUATING,

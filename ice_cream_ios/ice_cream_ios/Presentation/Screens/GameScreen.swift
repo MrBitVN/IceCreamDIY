@@ -22,6 +22,20 @@ struct GameScreen: View {
                         viewModel.restartLevel()
                     }
                 )
+            } else if viewModel.uiState.phase == .blenderMinigame {
+                BlenderMinigameView(
+                    level: viewModel.uiState.level,
+                    coins: viewModel.uiState.coins,
+                    onBlenderComplete: {
+                        viewModel.completeBlender()
+                    },
+                    onSettingsTapped: {
+                        viewModel.openSettings()
+                    },
+                    onRestartTapped: {
+                        viewModel.restartLevel()
+                    }
+                )
             } else {
                 ZStack {
                     // Gradient Background matching image 1 & 2

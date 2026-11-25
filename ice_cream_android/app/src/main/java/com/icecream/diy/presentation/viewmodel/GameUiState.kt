@@ -27,5 +27,6 @@ data class GameUiState(
     val isSoundEnabled: Boolean = true,
     val isHapticsEnabled: Boolean = true,
     val showSettingsDialog: Boolean = false,
-    val showResultsOverlay: Boolean = false
+    val showResultsOverlay: Boolean = false,
+    val sessionNonce: Int = 0
 )

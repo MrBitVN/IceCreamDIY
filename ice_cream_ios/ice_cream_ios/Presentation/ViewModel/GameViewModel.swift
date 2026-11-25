@@ -179,6 +179,10 @@ final class GameViewModel: ObservableObject {
     }
 
     func completeMinigame() {
+        uiState.phase = .blenderMinigame
+    }
+
+    func completeBlender() {
         uiState.phase = .pouring
     }
 

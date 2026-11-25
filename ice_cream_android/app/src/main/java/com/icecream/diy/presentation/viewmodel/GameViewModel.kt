@@ -87,7 +87,7 @@ class GameViewModel(
         _uiState.update {
             it.copy(
                 screen = AppScreen.GAME,
-                phase = if (config.hasMinigame) GamePhase.PREPARE_MINIGAME else GamePhase.POURING,
+                phase = config.initialPhase(),
                 targetConfig = config,
                 activeFlavors = emptySet(),
                 pourProgress = 0.0f,
@@ -98,7 +98,8 @@ class GameViewModel(
                 showTutorial = currentLvl == 1,
                 customerVariant = (currentLvl - 1) % 5,
                 showResultsOverlay = false,
-                earnedCoins = 0
+                earnedCoins = 0,
+                sessionNonce = it.sessionNonce + 1
             )
         }
     }
@@ -232,7 +233,26 @@ class GameViewModel(
     }
 
     fun completeMinigame() {
+        val nextPhase = _uiState.value.targetConfig.phaseAfterSlicing()
+        _uiState.update { it.copy(phase = nextPhase) }
+    }
+
+    fun completeBlender() {
+        soundHapticManager?.stopPouringFeedback()
         _uiState.update { it.copy(phase = GamePhase.POURING) }
+    }
+
+    fun triggerMinigamePulse() {
+        soundHapticManager?.triggerHapticPulse()
+    }
+
+    fun triggerBlenderTick() {
+        soundHapticManager?.startPouringFeedback()
+    }
+
+    fun triggerAwesomeFeedback() {
+        soundHapticManager?.stopPouringFeedback()
+        soundHapticManager?.playSuccessFeedback()
     }
 
     fun placeCherry() {

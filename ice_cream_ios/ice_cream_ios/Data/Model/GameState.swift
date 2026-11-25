@@ -8,6 +8,7 @@ enum AppScreen {
 
 enum GamePhase {
     case prepareMinigame
+    case blenderMinigame
     case pouring
     case decorating
     case evaluating

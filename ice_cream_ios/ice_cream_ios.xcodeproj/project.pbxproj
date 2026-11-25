@@ -39,6 +39,10 @@
 		1031 /* SettingsDialogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2031 /* SettingsDialogView.swift */; };
 		1032 /* ShopEnvironmentGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2032 /* ShopEnvironmentGenerator.swift */; };
 		1033 /* HomeCustomerSceneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2033 /* HomeCustomerSceneView.swift */; };
+		1034 /* MinigameEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2034 /* MinigameEngine.swift */; };
+		1035 /* MinigameProceduralGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2035 /* MinigameProceduralGenerator.swift */; };
+		1036 /* MinigameSceneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2036 /* MinigameSceneView.swift */; };
+		1037 /* BlenderMinigameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2037 /* BlenderMinigameView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -76,6 +80,10 @@
 		2031 /* SettingsDialogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDialogView.swift; sourceTree = "<group>"; };
 		2032 /* ShopEnvironmentGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopEnvironmentGenerator.swift; sourceTree = "<group>"; };
 		2033 /* HomeCustomerSceneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeCustomerSceneView.swift; sourceTree = "<group>"; };
+		2034 /* MinigameEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinigameEngine.swift; sourceTree = "<group>"; };
+		2035 /* MinigameProceduralGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinigameProceduralGenerator.swift; sourceTree = "<group>"; };
+		2036 /* MinigameSceneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinigameSceneView.swift; sourceTree = "<group>"; };
+		2037 /* BlenderMinigameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlenderMinigameView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -149,6 +157,7 @@
 				2024 /* MeshExtruder.swift */,
 				2025 /* SoundHapticManager.swift */,
 				2026 /* IceCreamMatcher.swift */,
+				2034 /* MinigameEngine.swift */,
 			);
 			path = Domain;
 			sourceTree = "<group>";
@@ -163,6 +172,7 @@
 				2012 /* FlavorButtonsBar.swift */,
 				2027 /* TutorialHandView.swift */,
 				2029 /* MinigameBoardView.swift */,
+				2037 /* BlenderMinigameView.swift */,
 				2030 /* ResultsOverlayView.swift */,
 				2031 /* SettingsDialogView.swift */,
 				2013 /* SplashScreen.swift */,
@@ -184,6 +194,8 @@
 				2032 /* ShopEnvironmentGenerator.swift */,
 				2022 /* SceneLighting.swift */,
 				2033 /* HomeCustomerSceneView.swift */,
+				2035 /* MinigameProceduralGenerator.swift */,
+				2036 /* MinigameSceneView.swift */,
 			);
 			path = Scene3D;
 			sourceTree = "<group>";
@@ -277,6 +289,10 @@
 				1031 /* SettingsDialogView.swift in Sources */,
 				1032 /* ShopEnvironmentGenerator.swift in Sources */,
 				1033 /* HomeCustomerSceneView.swift in Sources */,
+				1034 /* MinigameEngine.swift in Sources */,
+				1035 /* MinigameProceduralGenerator.swift in Sources */,
+				1036 /* MinigameSceneView.swift in Sources */,
+				1037 /* BlenderMinigameView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -44,7 +44,8 @@ struct LevelDataProvider {
         LevelConfig(
             levelNumber: 1,
             hasMinigame: false,
-            availableFlavors: [.vanilla, .strawberry, .chocolate],
+            minigames: MinigamesConfig(slicing: false, blender: false),
+            availableFlavors: [.vanilla],
             targetLayers: [TargetLayer(flavors: [.vanilla], proportion: 1.0)],
             sprinklesCount: 0,
             hasCherry: false,
@@ -53,6 +54,7 @@ struct LevelDataProvider {
         LevelConfig(
             levelNumber: 2,
             hasMinigame: true,
+            minigames: MinigamesConfig(slicing: true, blender: true),
             availableFlavors: [.vanilla, .strawberry, .chocolate],
             targetLayers: [
                 TargetLayer(flavors: [.vanilla], proportion: 0.5),
